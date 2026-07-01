@@ -1,0 +1,41 @@
+{
+  "version": 1,
+  "updated_at": "2026-07-01",
+  "always_load": [
+    "AGENTS.md"
+  ],
+  "load_for_non_trivial_tasks": [
+    "docs/INDEX.md",
+    "docs/_meta/source-of-truth-map.md"
+  ],
+  "task_context_routes": {
+    "product": [
+      "docs/product/vision.md",
+      "docs/product/personas.md",
+      "docs/product/roadmap.md"
+    ],
+    "architecture": [
+      "docs/architecture/system-overview.md",
+      "docs/architecture/context-map.md"
+    ],
+    "context_engineering": [
+      "docs/context/context-engineering-guide.md",
+      "docs/memory/memory-architecture.md"
+    ],
+    "agents": [
+      "docs/agents/agent-registry.md",
+      "docs/agents/handoff-protocol.md"
+    ],
+    "documentation_phase_planning": [
+      "docs/workflows/development/documentation-phases.md",
+      "docs/workflows/development/documentation-completion-checklist.md",
+      "docs/workflows/development/phase-0-readiness.md",
+      "docs/workflows/development/project-resume-brief.md"
+    ]
+  },
+  "avoid_loading_by_default": [
+    "docs/research/market/tiktok-shop-content-saas-analysis.md",
+    "docs/product/business-plan-affiliate-multimarketplace.md",
+    "docs/_meta/engineering-documentation-blueprint.md"
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "generated_at": "2026-07-01",
+  "entrypoints": {
+    "agents": "AGENTS.md",
+    "docs_home": "docs/README.md",
+    "docs_index": "docs/INDEX.md",
+    "blueprint": "docs/_meta/engineering-documentation-blueprint.md",
+    "blueprint_pointer": "docs/_meta/documentation-blueprint.md",
+    "source_of_truth_map": "docs/_meta/source-of-truth-map.md"
+  },
+  "source_of_truth": {
+    "product_vision": "docs/product/vision.md",
+    "personas": "docs/product/personas.md",
+    "roadmap": "docs/product/roadmap.md",
+    "system_architecture": "docs/architecture/system-overview.md",
+    "context_map": "docs/architecture/context-map.md",
+    "context_engineering": "docs/context/context-engineering-guide.md",
+    "memory": "docs/memory/memory-architecture.md",
+    "agents": "docs/agents/agent-registry.md",
+    "handoff": "docs/agents/handoff-protocol.md"
+  },
+  "workflows": {
+    "implementation_plan": "docs/workflows/development/implementation-plan.md",
+    "documentation_phases": "docs/workflows/development/documentation-phases.md",
+    "documentation_completion_checklist": "docs/workflows/development/documentation-completion-checklist.md",
+    "phase_0_readiness": "docs/workflows/development/phase-0-readiness.md",
+    "project_resume_brief": "docs/workflows/development/project-resume-brief.md"
+  },
+  "planning_artifacts": [
+    "docs/product/business-plan-affiliate-multimarketplace.md",
+    "docs/research/market/tiktok-shop-content-saas-analysis.md"
+  ]
+}
