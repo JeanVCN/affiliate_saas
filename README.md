@@ -1,37 +1,63 @@
 # Affiliate SaaS
 
-AI-assisted affiliate commerce platform for creators, affiliates, agencies, and operators who manage products, affiliate links, campaign assets, publishing tasks, and performance across multiple affiliate programs.
+Affiliate SaaS is an AI-assisted workspace for affiliate commerce.
 
-## Current Direction
+It helps creators, affiliates, agencies, and small commerce operators organize products, affiliate links, campaign ideas, publishing tasks, click tracking, conversion imports, and performance insights across multiple affiliate programs.
 
-The MVP is not a generic video clipping tool. It is an affiliate commerce operating system:
+## Product Direction
 
-`product -> affiliate link -> AI campaign -> channel package -> click tracking -> conversion import -> insight`
+The product is built around a practical affiliate workflow:
 
-Initial playbooks:
+```text
+product -> affiliate link -> campaign package -> tracking -> imported conversions -> insight
+```
+
+The first version focuses on helping operators answer:
+
+- Which product should I promote next?
+- Which angle or channel is working?
+- Which links and campaigns generated clicks?
+- Which imported sales or commissions should inform the next campaign?
+
+## MVP Focus
+
+Initial marketplace playbooks:
 
 - TikTok Shop Affiliate
 - Shopee Affiliates
 - Mercado Livre
 - Amazon Associates/Creators
 
+The MVP is designed to work without depending on closed marketplace APIs. It favors manual setup, user-authorized imports, clear tracking, and safe AI-assisted campaign drafting.
+
+## Principles
+
+- Keep the workflow commerce-first.
+- Avoid scraping, browser automation, and artificial engagement.
+- Treat affiliate disclosures, product claims, pricing, and asset rights as first-class concerns.
+- Prefer official APIs and user-authorized imports when integrations become available.
+
+## Project Status
+
+The product development documentation base is complete. The next implementation slice is:
+
+```text
+workspace -> marketplace program -> product -> affiliate link -> short redirect -> click event -> dashboard query
+```
+
 ## Documentation
 
-Start with:
+Start here:
 
 - [AGENTS.md](AGENTS.md)
 - [docs/README.md](docs/README.md)
 - [docs/INDEX.md](docs/INDEX.md)
-- [docs/_meta/engineering-documentation-blueprint.md](docs/_meta/engineering-documentation-blueprint.md)
-- [docs/product/business-plan-affiliate-multimarketplace.md](docs/product/business-plan-affiliate-multimarketplace.md)
-
-The documentation system is intentionally designed for AI-assisted development with compact context, clear sources of truth, handoffs, memory, and future MCP/code-index support.
+- [docs/workflows/development/project-resume-brief.md](docs/workflows/development/project-resume-brief.md)
 
 ## Stack Direction
 
-- Backend: Go
+- Backend: Go + Gin
 - Database: PostgreSQL
-- Queue: Redis Streams
-- Storage: S3-compatible
+- Queue: Redis Streams when async jobs are needed
 - Frontend: Next.js + React
 - Deploy: Docker first
