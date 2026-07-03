@@ -2,7 +2,7 @@
 title: Context Map
 status: draft
 owner: system-architect
-last_verified_at: 2026-07-01
+last_verified_at: 2026-07-03
 source_of_truth: true
 ---
 
@@ -42,3 +42,13 @@ flowchart TD
 - Compliance checks annotate and block risky outputs; they do not generate copy.
 - Billing consumes usage events; it does not call AI providers directly.
 
+## Domain Docs
+
+- Identity/Workspace: `docs/domains/identity/README.md`
+- Marketplace Programs: `docs/domains/marketplace/README.md`
+- Products/Offers: `docs/domains/product/README.md`
+- Affiliate Links: `docs/domains/affiliate/README.md`
+- Link Tracking: `docs/domains/link-tracking/README.md`
+- Campaigns: `docs/domains/campaign/README.md`
+- Analytics: `docs/domains/analytics/README.md`
+- Compliance: `docs/domains/compliance/README.md`

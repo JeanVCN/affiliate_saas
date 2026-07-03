@@ -2,7 +2,7 @@
 title: Documentation Phases
 status: active
 owner: technical-writer
-last_verified_at: 2026-07-01
+last_verified_at: 2026-07-03
 source_of_truth: true
 depends_on:
   - ../../_meta/engineering-documentation-blueprint.md
@@ -84,6 +84,7 @@ Scope:
 
 - `docs/domains/affiliate/README.md`
 - `docs/domains/marketplace/README.md`
+- `docs/domains/product/README.md`
 - `docs/domains/campaign/README.md`
 - `docs/domains/link-tracking/README.md`
 - `docs/domains/analytics/README.md`

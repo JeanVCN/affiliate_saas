@@ -2,7 +2,7 @@
 title: Documentation Completion Checklist
 status: active
 owner: technical-writer
-last_verified_at: 2026-07-01
+last_verified_at: 2026-07-03
 source_of_truth: true
 depends_on:
   - ../../_meta/engineering-documentation-blueprint.md
@@ -49,45 +49,63 @@ docs: establish AI-assisted development foundation
 
 ## Phase 1: Architecture Decision Base
 
-- [ ] `docs/decisions/decision-log.md`
-- [ ] First ADRs for module layout, router, migrations, auth, and short links.
+- [x] `docs/decisions/decision-log.md`
+- [x] First ADRs for module layout, router, migrations, auth, and short links.
 
 ## Phase 2: MVP Domain Base
 
-- [ ] `docs/domains/affiliate/README.md`
-- [ ] `docs/domains/marketplace/README.md`
-- [ ] `docs/domains/campaign/README.md`
-- [ ] `docs/domains/link-tracking/README.md`
-- [ ] `docs/domains/analytics/README.md`
-- [ ] `docs/domains/compliance/README.md`
-- [ ] `docs/domains/identity/README.md`
+- [x] `docs/domains/affiliate/README.md`
+- [x] `docs/domains/marketplace/README.md`
+- [x] `docs/domains/product/README.md`
+- [x] `docs/domains/campaign/README.md`
+- [x] `docs/domains/link-tracking/README.md`
+- [x] `docs/domains/analytics/README.md`
+- [x] `docs/domains/compliance/README.md`
+- [x] `docs/domains/identity/README.md`
 
 ## Phase 3: Contracts And Data Base
 
-- [ ] `docs/api/README.md`
-- [ ] `docs/database/schema-overview.md`
+- [x] `docs/api/README.md`
+- [x] `docs/api/rest/mvp-endpoints.md`
+- [x] `docs/database/schema-overview.md`
+- [x] `docs/database/entity-catalog.md`
+- [x] `docs/database/migrations.md`
 
 ## Phase 4: Quality Security And Local Dev Base
 
-- [ ] `docs/quality/testing-strategy.md`
-- [ ] `docs/security/secrets-policy.md`
-- [ ] `docs/deployment/docker.md`
-- [ ] `docs/onboarding/agent-onboarding.md`
-- [ ] `docs/onboarding/local-dev.md`
+- [x] `docs/quality/testing-strategy.md`
+- [x] `docs/quality/quality-gates.md`
+- [x] `docs/security/secrets-policy.md`
+- [x] `docs/security/threat-model.md`
+- [x] `docs/deployment/docker.md`
+- [x] `docs/onboarding/agent-onboarding.md`
+- [x] `docs/onboarding/local-dev.md`
 
 ## P1 Before Beta
 
-- [ ] `docs/mcp/mcp-strategy.md`
-- [ ] `docs/code-index/indexing-strategy.md`
-- [ ] `docs/quality/quality-gates.md`
-- [ ] `docs/security/threat-model.md`
+- [x] `docs/mcp/mcp-strategy.md`
+- [x] `docs/mcp/project-mcp-spec.md`
+- [x] `docs/code-index/indexing-strategy.md`
+- [x] `docs/prompts/prompt-library.md`
+- [x] `docs/quality/evals.md`
+- [x] `docs/quality/quality-gates.md`
+- [x] `docs/security/threat-model.md`
 - [ ] `docs/product/metrics.md`
 - [ ] platform research docs for TikTok Shop, Shopee, Mercado Livre, Amazon.
 
+## Ready For Product Development
+
+- [x] Phase 0 documentation operating base exists.
+- [x] Phase 1 ADRs are accepted.
+- [x] Phase 2 MVP domains exist.
+- [x] Phase 3 API/data baseline exists.
+- [x] Phase 4 local verification and secrets policy exist.
+- [x] Phase 5 AI/MCP/code-index baseline exists.
+
 ## Ready To Start Coding When
 
-- [ ] P0 ADRs are accepted.
-- [ ] Initial domain docs exist for the first vertical slice.
-- [ ] API/database baseline docs exist.
-- [ ] Backend module layout ADR is accepted.
-- [ ] Local verification command is documented.
+- [x] P0 ADRs are accepted.
+- [x] Initial domain docs exist for the first vertical slice.
+- [x] API/database baseline docs exist.
+- [x] Backend module layout ADR is accepted.
+- [x] Local verification command is documented.

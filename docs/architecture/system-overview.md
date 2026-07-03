@@ -21,6 +21,14 @@ Start as a modular monolith with clear domain boundaries and async workers. Do n
 - Frontend: Next.js + React.
 - Deploy: Docker first.
 
+## Accepted Foundational Decisions
+
+- Backend module layout: `docs/decisions/adr/001-backend-module-layout.md`
+- HTTP router/framework: `docs/decisions/adr/002-http-router-framework.md`
+- Database migration tool: `docs/decisions/adr/003-database-migration-tool.md`
+- Auth/session strategy: `docs/decisions/adr/004-auth-session-strategy.md`
+- Short-link tracking strategy: `docs/decisions/adr/005-short-link-tracking-strategy.md`
+
 ## Major Modules
 
 - Identity and workspace.
@@ -52,10 +60,5 @@ flowchart LR
 
 ## Key Decisions Pending ADRs
 
-- Web framework/router for Go API.
-- Migration tool.
-- Auth/session strategy.
-- Short link routing strategy.
 - AI provider abstraction.
 - Redis Streams consumer group conventions.
-

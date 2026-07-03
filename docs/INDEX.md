@@ -26,6 +26,49 @@ source_of_truth: true
 - `architecture/system-overview.md`: system architecture baseline.
 - `architecture/context-map.md`: bounded contexts and domain relationships.
 
+## Decisions
+
+- `decisions/decision-log.md`: accepted architecture decisions.
+- `decisions/adr/`: architecture decision records.
+
+## Domains
+
+- `domains/README.md`: MVP domain model and first vertical slice.
+- `domains/identity/README.md`: users, workspaces, membership, sessions, and authorization.
+- `domains/marketplace/README.md`: marketplace and affiliate program setup.
+- `domains/product/README.md`: workspace product and offer catalog.
+- `domains/affiliate/README.md`: affiliate link registry and variants.
+- `domains/link-tracking/README.md`: short links, redirects, and click events.
+- `domains/campaign/README.md`: campaign drafts, channel packages, and publishing tasks.
+- `domains/analytics/README.md`: click/import aggregates and dashboard insights.
+- `domains/compliance/README.md`: affiliate disclosure, claims, policy, and AI output checks.
+
+## API And Database
+
+- `api/README.md`: API conventions and contract overview.
+- `api/rest/mvp-endpoints.md`: MVP REST endpoint inventory.
+- `database/schema-overview.md`: initial PostgreSQL schema direction.
+- `database/entity-catalog.md`: initial entity/table catalog.
+- `database/migrations.md`: SQL migration policy.
+
+## Quality, Security, Deployment, Onboarding
+
+- `quality/testing-strategy.md`: testing strategy for backend, database, frontend, and AI.
+- `quality/quality-gates.md`: verification gates before merging or presenting work.
+- `quality/evals.md`: AI prompt evaluation strategy.
+- `security/secrets-policy.md`: secrets and sensitive data policy.
+- `security/threat-model.md`: MVP threat model.
+- `deployment/docker.md`: Docker-first deployment baseline.
+- `onboarding/local-dev.md`: local development commands and workflow.
+- `onboarding/agent-onboarding.md`: startup guide for AI agents.
+
+## AI Tooling And Retrieval
+
+- `mcp/mcp-strategy.md`: MCP access strategy and deny-by-default policy.
+- `mcp/project-mcp-spec.md`: planned project MCP/tool surface.
+- `code-index/indexing-strategy.md`: exact search, symbol search, generated index, and semantic search roles.
+- `prompts/prompt-library.md`: AI campaign/compliance prompt families and versioning.
+
 ## Context, Memory, Agents
 
 - `context/context-engineering-guide.md`: context loading, retrieval, compression, and budgets.

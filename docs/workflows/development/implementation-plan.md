@@ -2,7 +2,7 @@
 title: Initial Implementation Plan
 status: active
 owner: system-architect
-last_verified_at: 2026-07-01
+last_verified_at: 2026-07-03
 source_of_truth: true
 depends_on:
   - ../../product/roadmap.md
@@ -16,19 +16,19 @@ This plan sequences work after the documentation foundation has started. Product
 
 ## Phase A: Finish Documentation Architecture
 
-- Create initial ADRs for foundational technical choices.
-- Create domain docs for affiliate, marketplace, campaign, link tracking, analytics, AI generation, compliance, identity, and billing.
-- Create API and database overview docs before implementing contracts.
-- Create quality, security, and deployment baseline docs.
-- Create onboarding docs for humans and agents.
+- Create initial ADRs for foundational technical choices. Done in `docs/decisions/`.
+- Create domain docs for identity, marketplace, product, affiliate, link tracking, campaign, analytics, and compliance. Done in `docs/domains/`.
+- Create API and database overview docs before implementing contracts. Done in `docs/api/` and `docs/database/`.
+- Create quality, security, and deployment baseline docs. Done in `docs/quality/`, `docs/security/`, and `docs/deployment/`.
+- Create onboarding docs for humans and agents. Done in `docs/onboarding/`.
 
 ## Phase B: Backend Foundation
 
 Do not start this phase until Phase 1 ADRs are accepted.
 
-- Choose Go HTTP router/framework via ADR.
-- Choose migration tool via ADR.
-- Define project layout under `backend/`.
+- Choose Go HTTP router/framework via ADR. Done in `docs/decisions/adr/002-http-router-framework.md`.
+- Choose migration tool via ADR. Done in `docs/decisions/adr/003-database-migration-tool.md`.
+- Define project layout under `backend/`. Done in `docs/decisions/adr/001-backend-module-layout.md`.
 - Add health endpoint.
 - Add config loading.
 - Add PostgreSQL connection layer.
@@ -64,10 +64,11 @@ Build the smallest vertical slice:
 
 ## Current Next Action
 
-Create the P0 ADRs:
+Start the first implementation slice:
 
-1. Go backend module layout.
-2. HTTP router/framework.
-3. Database migration tool.
-4. Auth/session strategy.
-5. Short link tracking strategy.
+1. Scaffold `backend/` as a Go modular monolith.
+2. Add Gin API with `GET /healthz`.
+3. Add config loading and PostgreSQL connection.
+4. Add first SQL migrations.
+5. Implement `workspace -> marketplace program -> product -> affiliate link -> short redirect -> click event -> dashboard query`.
+6. Keep AI generation, marketplace integrations, OAuth, and frontend scaffold out until this slice is stable.

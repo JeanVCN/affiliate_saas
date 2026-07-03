@@ -2,7 +2,7 @@
 title: Project Resume Brief
 status: active
 owner: system-architect
-last_verified_at: 2026-07-01
+last_verified_at: 2026-07-03
 source_of_truth: true
 depends_on:
   - documentation-phases.md
@@ -16,7 +16,7 @@ Use this file when resuming the project in a new chat or with a fresh agent.
 
 ## Current State
 
-Phase 0 is complete and ready to commit.
+Phase 0 is complete. Phase 1 foundational ADRs are accepted. Phase 2 MVP domain docs are complete. Phase 3 API/database baseline docs are complete. Phase 4 quality/security/local-dev docs are complete. Phase 5 AI/MCP/code-index docs are complete.
 
 The repository currently contains documentation and planning only. There is intentionally no backend module, frontend app, database schema, or product implementation yet.
 
@@ -58,29 +58,83 @@ For architecture context, load:
 - `docs/architecture/system-overview.md`
 - `docs/architecture/context-map.md`
 
-## Next Phase
-
-The next phase is Phase 1: Architecture Decision Base.
-
-Create:
+## Current Architecture Decisions
 
 - `docs/decisions/decision-log.md`
-- ADR for backend module layout.
-- ADR for HTTP router/framework.
-- ADR for database migration tool.
-- ADR for auth/session direction.
-- ADR for short-link tracking strategy.
+- `docs/decisions/adr/001-backend-module-layout.md`
+- `docs/decisions/adr/002-http-router-framework.md`
+- `docs/decisions/adr/003-database-migration-tool.md`
+- `docs/decisions/adr/004-auth-session-strategy.md`
+- `docs/decisions/adr/005-short-link-tracking-strategy.md`
 
-## Do Not Start Yet
+## Current Domain Docs
 
-Do not implement backend, frontend, database migrations, API endpoints, AI prompts, or infrastructure before Phase 1 ADRs are accepted and Phase 2/3 docs define the first vertical slice.
+- `docs/domains/README.md`
+- `docs/domains/identity/README.md`
+- `docs/domains/marketplace/README.md`
+- `docs/domains/product/README.md`
+- `docs/domains/affiliate/README.md`
+- `docs/domains/link-tracking/README.md`
+- `docs/domains/campaign/README.md`
+- `docs/domains/analytics/README.md`
+- `docs/domains/compliance/README.md`
+
+## Current Contract Docs
+
+- `docs/api/README.md`
+- `docs/api/rest/mvp-endpoints.md`
+- `docs/database/schema-overview.md`
+- `docs/database/entity-catalog.md`
+- `docs/database/migrations.md`
+
+## Current Quality And Safety Docs
+
+- `docs/quality/testing-strategy.md`
+- `docs/quality/quality-gates.md`
+- `docs/quality/evals.md`
+- `docs/security/secrets-policy.md`
+- `docs/security/threat-model.md`
+- `docs/deployment/docker.md`
+- `docs/onboarding/local-dev.md`
+- `docs/onboarding/agent-onboarding.md`
+
+## Current AI Tooling Docs
+
+- `docs/mcp/mcp-strategy.md`
+- `docs/mcp/project-mcp-spec.md`
+- `docs/code-index/indexing-strategy.md`
+- `docs/prompts/prompt-library.md`
+
+## Next Phase
+
+The next phase is product implementation.
+
+Start with:
+
+- `backend/` Go modular monolith.
+- Gin API with `GET /healthz`.
+- config loading and PostgreSQL connection.
+- first SQL migrations.
+- first vertical slice:
+
+```text
+workspace -> marketplace program -> product -> affiliate link -> short redirect -> click event -> dashboard query
+```
+
+## Keep Out Of First Slice
+
+- AI generation.
+- Marketplace API integrations.
+- OAuth marketplace connections.
+- Browser automation.
+- Frontend scaffold unless explicitly requested.
 
 ## Suggested Next Commit
 
-Commit current Phase 0 as:
+Commit current documentation foundation as:
 
 ```text
-docs: establish AI-assisted development foundation
+docs: complete product development documentation base
 ```
 
 ## Validation For Phase 0
@@ -92,4 +146,3 @@ node -e "for (const f of ['.docs-index.json','.context-manifest.json']) JSON.par
 ```
 
 Expected result: command exits with code 0.
-

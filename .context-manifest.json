@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updated_at": "2026-07-01",
+  "updated_at": "2026-07-03",
   "always_load": [
     "AGENTS.md"
   ],
@@ -16,7 +16,62 @@
     ],
     "architecture": [
       "docs/architecture/system-overview.md",
-      "docs/architecture/context-map.md"
+      "docs/architecture/context-map.md",
+      "docs/decisions/decision-log.md"
+    ],
+    "architecture_decisions": [
+      "docs/decisions/decision-log.md",
+      "docs/decisions/adr/001-backend-module-layout.md",
+      "docs/decisions/adr/002-http-router-framework.md",
+      "docs/decisions/adr/003-database-migration-tool.md",
+      "docs/decisions/adr/004-auth-session-strategy.md",
+      "docs/decisions/adr/005-short-link-tracking-strategy.md"
+    ],
+    "domains": [
+      "docs/domains/README.md",
+      "docs/domains/identity/README.md",
+      "docs/domains/marketplace/README.md",
+      "docs/domains/product/README.md",
+      "docs/domains/affiliate/README.md",
+      "docs/domains/link-tracking/README.md",
+      "docs/domains/campaign/README.md",
+      "docs/domains/analytics/README.md",
+      "docs/domains/compliance/README.md"
+    ],
+    "api": [
+      "docs/api/README.md",
+      "docs/api/rest/mvp-endpoints.md"
+    ],
+    "database": [
+      "docs/database/schema-overview.md",
+      "docs/database/entity-catalog.md",
+      "docs/database/migrations.md"
+    ],
+    "quality": [
+      "docs/quality/testing-strategy.md",
+      "docs/quality/quality-gates.md",
+      "docs/quality/evals.md"
+    ],
+    "security": [
+      "docs/security/secrets-policy.md",
+      "docs/security/threat-model.md"
+    ],
+    "deployment": [
+      "docs/deployment/docker.md"
+    ],
+    "onboarding": [
+      "docs/onboarding/local-dev.md",
+      "docs/onboarding/agent-onboarding.md"
+    ],
+    "mcp": [
+      "docs/mcp/mcp-strategy.md",
+      "docs/mcp/project-mcp-spec.md"
+    ],
+    "code_index": [
+      "docs/code-index/indexing-strategy.md"
+    ],
+    "prompts": [
+      "docs/prompts/prompt-library.md"
     ],
     "context_engineering": [
       "docs/context/context-engineering-guide.md",
