@@ -30,10 +30,11 @@ Check:
 
 ## Backend Gate
 
-Active once backend code exists:
+Active now that `backend/` exists:
 
 ```bash
-go test ./...
+cd backend
+GOCACHE=/tmp/affiliate-saas-go-cache go test ./...
 ```
 
 Required:

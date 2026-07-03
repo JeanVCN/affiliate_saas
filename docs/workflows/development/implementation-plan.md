@@ -66,9 +66,10 @@ Build the smallest vertical slice:
 
 Start the first implementation slice:
 
-1. Scaffold `backend/` as a Go modular monolith.
-2. Add Gin API with `GET /healthz`.
-3. Add config loading and PostgreSQL connection.
-4. Add first SQL migrations.
-5. Implement `workspace -> marketplace program -> product -> affiliate link -> short redirect -> click event -> dashboard query`.
-6. Keep AI generation, marketplace integrations, OAuth, and frontend scaffold out until this slice is stable.
+1. Implement repository-backed workspace endpoints.
+2. Implement marketplace program setup endpoints.
+3. Implement product and offer endpoints.
+4. Implement affiliate link and short-link endpoints.
+5. Implement `/r/{slug}` click recording and redirect.
+6. Implement dashboard query for clicks by product/link.
+7. Keep AI generation, marketplace integrations, OAuth, and frontend scaffold out until this slice is stable.

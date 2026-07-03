@@ -11,7 +11,7 @@ depends_on:
 
 # Local Development
 
-The repository is currently documentation-only. These commands define the current verification path and the intended local workflow once implementation begins.
+The repository now includes the initial Go backend scaffold. These commands define the current verification path and the intended local workflow as implementation grows.
 
 ## Current Setup
 
@@ -21,20 +21,20 @@ From the repository root:
 node -e "for (const f of ['.docs-index.json','.context-manifest.json']) JSON.parse(require('fs').readFileSync(f,'utf8'));"
 ```
 
-This is the active local verification command until application code exists.
+This remains the documentation verification command.
 
-## Future Backend Workflow
+## Backend Workflow
 
-Expected once `backend/` exists:
+From the repository root:
 
 ```bash
 cd backend
-go test ./...
+GOCACHE=/tmp/affiliate-saas-go-cache go test ./...
 ```
 
 Expected services:
 
-- PostgreSQL for persistence.
+- PostgreSQL for persistence once repository endpoints are implemented.
 - Redis only after async jobs are introduced.
 
 ## Future Frontend Workflow
@@ -50,6 +50,20 @@ npm run build
 
 Exact package manager and app directory will be documented when the frontend is scaffolded.
 
+## Migrations
+
+SQL migrations live in:
+
+```text
+backend/migrations/
+```
+
+Expected command once a local database is available:
+
+```bash
+migrate -path backend/migrations -database "$DATABASE_URL" up
+```
+
 ## Future Docker Workflow
 
 Expected once Compose exists:
@@ -62,7 +76,7 @@ Migrations should run as a separate documented command or one-shot service.
 
 ## First Implementation Slice
 
-When coding starts, implement and verify:
+The active implementation target is:
 
 ```text
 workspace -> marketplace program -> product -> affiliate link -> short redirect -> click event -> dashboard query

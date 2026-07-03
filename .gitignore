@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+!backend/.env.example
+
+/tmp/
+/dist/
+/build/
+
+*.log
+*.tmp
+*.test
+coverage.out
+
+node_modules/

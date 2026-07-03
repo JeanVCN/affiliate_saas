@@ -16,9 +16,9 @@ Use this file when resuming the project in a new chat or with a fresh agent.
 
 ## Current State
 
-Phase 0 is complete. Phase 1 foundational ADRs are accepted. Phase 2 MVP domain docs are complete. Phase 3 API/database baseline docs are complete. Phase 4 quality/security/local-dev docs are complete. Phase 5 AI/MCP/code-index docs are complete.
+Phase 0 is complete. Phase 1 foundational ADRs are accepted. Phase 2 MVP domain docs are complete. Phase 3 API/database baseline docs are complete. Phase 4 quality/security/local-dev docs are complete. Phase 5 AI/MCP/code-index docs are complete. Backend implementation has started with a Go/Gin scaffold, health endpoint, config loading, PostgreSQL connection layer, and initial SQL migrations.
 
-The repository currently contains documentation and planning only. There is intentionally no backend module, frontend app, database schema, or product implementation yet.
+The repository now contains documentation plus the initial backend module. There is intentionally no frontend app or AI/product automation yet.
 
 ## Product Direction
 
@@ -109,13 +109,9 @@ For architecture context, load:
 
 The next phase is product implementation.
 
-Start with:
+Continue with:
 
-- `backend/` Go modular monolith.
-- Gin API with `GET /healthz`.
-- config loading and PostgreSQL connection.
-- first SQL migrations.
-- first vertical slice:
+- repository-backed endpoints for the first vertical slice:
 
 ```text
 workspace -> marketplace program -> product -> affiliate link -> short redirect -> click event -> dashboard query

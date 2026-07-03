@@ -39,7 +39,9 @@ The MVP is designed to work without depending on closed marketplace APIs. It fav
 
 ## Project Status
 
-The product development documentation base is complete. The next implementation slice is:
+The product development documentation base is complete. Backend implementation has started with the Go/Gin scaffold, health endpoint, config loading, PostgreSQL connection layer, and initial SQL migrations.
+
+The active implementation slice is:
 
 ```text
 workspace -> marketplace program -> product -> affiliate link -> short redirect -> click event -> dashboard query

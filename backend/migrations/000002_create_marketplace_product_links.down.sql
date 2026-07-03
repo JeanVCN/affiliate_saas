@@ -1,0 +1,9 @@
+DROP TABLE IF EXISTS click_events;
+DROP TABLE IF EXISTS short_links;
+DROP TABLE IF EXISTS link_variants;
+DROP TABLE IF EXISTS affiliate_links;
+DROP TABLE IF EXISTS offers;
+DROP TABLE IF EXISTS products;
+DROP TABLE IF EXISTS workspace_programs;
+DROP TABLE IF EXISTS programs;
+DROP TABLE IF EXISTS marketplaces;
