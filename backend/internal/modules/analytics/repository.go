@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 
 	"github.com/JeanVCN/affiliate_saas/backend/internal/modules/common"
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -15,7 +16,14 @@ type Repository interface {
 	TopProducts(ctx context.Context, workspaceID string) ([]TopProduct, error)
 	CreateConversionImport(ctx context.Context, workspaceID string, input CreateConversionImportInput) (ConversionImport, error)
 	CreateConversionImportRow(ctx context.Context, workspaceID string, importID string, input CreateConversionImportRowInput) (ConversionImportRow, error)
+	CreateConversionImportRows(ctx context.Context, workspaceID string, importID string, inputs []CreateConversionImportRowInput) ([]ConversionImportRow, error)
 	GetConversionImport(ctx context.Context, workspaceID string, importID string) (ConversionImport, error)
+	ReconciliationSummary(ctx context.Context, workspaceID string, importID string) (ReconciliationSummary, error)
+	UpdateConversionImportRow(ctx context.Context, workspaceID string, importID string, rowID string, input UpdateConversionImportRowInput) (ConversionImportRow, error)
+}
+
+type queryRower interface {
+	QueryRow(ctx context.Context, sql string, args ...any) pgx.Row
 }
 
 type PostgresRepository struct {
@@ -132,6 +140,31 @@ func (repo *PostgresRepository) CreateConversionImport(ctx context.Context, work
 }
 
 func (repo *PostgresRepository) CreateConversionImportRow(ctx context.Context, workspaceID string, importID string, input CreateConversionImportRowInput) (ConversionImportRow, error) {
+	return createConversionImportRow(ctx, repo.db, workspaceID, importID, input)
+}
+
+func (repo *PostgresRepository) CreateConversionImportRows(ctx context.Context, workspaceID string, importID string, inputs []CreateConversionImportRowInput) ([]ConversionImportRow, error) {
+	tx, err := repo.db.Begin(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer tx.Rollback(ctx)
+
+	items := make([]ConversionImportRow, 0, len(inputs))
+	for _, input := range inputs {
+		item, err := createConversionImportRow(ctx, tx, workspaceID, importID, input)
+		if err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
+func createConversionImportRow(ctx context.Context, q queryRower, workspaceID string, importID string, input CreateConversionImportRowInput) (ConversionImportRow, error) {
 	if input.RawPayload == nil {
 		input.RawPayload = map[string]any{}
 	}
@@ -141,41 +174,67 @@ func (repo *PostgresRepository) CreateConversionImportRow(ctx context.Context, w
 	}
 	item := ConversionImportRow{ID: common.NewID("cir")}
 	var occurredAt sql.NullTime
-	err = repo.db.QueryRow(ctx, `
+	var reconciledAt sql.NullTime
+	err = q.QueryRow(ctx, `
+		WITH resolved AS (
+			SELECT
+				COALESCE(NULLIF($4, ''), (
+					SELECT al.product_id
+					FROM affiliate_links al
+					WHERE al.id = NULLIF($5, '')
+					  AND al.workspace_id = $2
+					  AND al.archived_at IS NULL
+				)) AS product_id,
+				NULLIF($5, '') AS affiliate_link_id
+		)
 		INSERT INTO conversion_import_rows (
 			id, workspace_id, conversion_import_id, product_id, affiliate_link_id,
-			occurred_at, order_reference, gross_amount_cents, commission_cents, currency, raw_payload
+			occurred_at, order_reference, gross_amount_cents, commission_cents, currency, raw_payload,
+			reconciliation_status
 		)
-		SELECT $1, $2, ci.id, NULLIF($4, ''), NULLIF($5, ''), $6, NULLIF($7, ''),
-		       $8, $9, NULLIF($10, ''), $11
+		SELECT $1, $2, ci.id, r.product_id, r.affiliate_link_id, $6, NULLIF($7, ''),
+		       $8, $9, NULLIF($10, ''), $11,
+		       CASE
+		         WHEN r.product_id IS NOT NULL OR r.affiliate_link_id IS NOT NULL THEN 'matched'
+		         ELSE 'pending'
+		       END
 		FROM conversion_imports ci
+		CROSS JOIN resolved r
 		WHERE ci.id = $3
 		  AND ci.workspace_id = $2
 		  AND ci.status <> 'archived'
 		  AND (
-		    NULLIF($4, '') IS NULL
+		    r.product_id IS NULL
 		    OR EXISTS (
 		      SELECT 1 FROM products p
-		      WHERE p.id = $4 AND p.workspace_id = $2 AND p.archived_at IS NULL
+		      WHERE p.id = r.product_id AND p.workspace_id = $2 AND p.archived_at IS NULL
 		    )
 		  )
 		  AND (
-		    NULLIF($5, '') IS NULL
+		    r.affiliate_link_id IS NULL
 		    OR EXISTS (
 		      SELECT 1 FROM affiliate_links al
-		      WHERE al.id = $5 AND al.workspace_id = $2 AND al.archived_at IS NULL
+		      WHERE al.id = r.affiliate_link_id
+		        AND al.workspace_id = $2
+		        AND al.archived_at IS NULL
+		        AND (r.product_id IS NULL OR al.product_id = r.product_id)
 		    )
 		  )
 		RETURNING id, workspace_id, conversion_import_id, COALESCE(product_id, ''),
 		          COALESCE(affiliate_link_id, ''), occurred_at, COALESCE(order_reference, ''),
-		          gross_amount_cents, commission_cents, COALESCE(currency, ''), raw_payload, created_at`,
+		          gross_amount_cents, commission_cents, COALESCE(currency, ''), raw_payload,
+		          reconciliation_status, COALESCE(reconciliation_note, ''), reconciled_at, created_at`,
 		item.ID, workspaceID, importID, input.ProductID, input.AffiliateLinkID, input.OccurredAt,
 		input.OrderReference, input.GrossAmountCents, input.CommissionCents, input.Currency, rawPayload,
 	).Scan(&item.ID, &item.WorkspaceID, &item.ConversionImportID, &item.ProductID, &item.AffiliateLinkID,
 		&occurredAt, &item.OrderReference, &item.GrossAmountCents, &item.CommissionCents,
-		&item.Currency, &item.RawPayload, &item.CreatedAt)
+		&item.Currency, &item.RawPayload, &item.ReconciliationStatus, &item.ReconciliationNote,
+		&reconciledAt, &item.CreatedAt)
 	if occurredAt.Valid {
 		item.OccurredAt = &occurredAt.Time
+	}
+	if reconciledAt.Valid {
+		item.ReconciledAt = &reconciledAt.Time
 	}
 	return item, common.NormalizePostgresErr(err)
 }
@@ -196,6 +255,11 @@ func (repo *PostgresRepository) GetConversionImport(ctx context.Context, workspa
 		return item, err
 	}
 	item.Rows = rows
+	summary, err := repo.ReconciliationSummary(ctx, workspaceID, importID)
+	if err != nil {
+		return item, err
+	}
+	item.Summary = &summary
 	return item, nil
 }
 
@@ -203,7 +267,8 @@ func (repo *PostgresRepository) listConversionImportRows(ctx context.Context, wo
 	rows, err := repo.db.Query(ctx, `
 		SELECT id, workspace_id, conversion_import_id, COALESCE(product_id, ''),
 		       COALESCE(affiliate_link_id, ''), occurred_at, COALESCE(order_reference, ''),
-		       gross_amount_cents, commission_cents, COALESCE(currency, ''), raw_payload, created_at
+		       gross_amount_cents, commission_cents, COALESCE(currency, ''), raw_payload,
+		       reconciliation_status, COALESCE(reconciliation_note, ''), reconciled_at, created_at
 		FROM conversion_import_rows
 		WHERE workspace_id = $1 AND conversion_import_id = $2
 		ORDER BY created_at DESC`, workspaceID, importID)
@@ -216,13 +281,18 @@ func (repo *PostgresRepository) listConversionImportRows(ctx context.Context, wo
 	for rows.Next() {
 		var item ConversionImportRow
 		var occurredAt sql.NullTime
+		var reconciledAt sql.NullTime
 		if err := rows.Scan(&item.ID, &item.WorkspaceID, &item.ConversionImportID, &item.ProductID, &item.AffiliateLinkID,
 			&occurredAt, &item.OrderReference, &item.GrossAmountCents, &item.CommissionCents,
-			&item.Currency, &item.RawPayload, &item.CreatedAt); err != nil {
+			&item.Currency, &item.RawPayload, &item.ReconciliationStatus, &item.ReconciliationNote,
+			&reconciledAt, &item.CreatedAt); err != nil {
 			return nil, err
 		}
 		if occurredAt.Valid {
 			item.OccurredAt = &occurredAt.Time
+		}
+		if reconciledAt.Valid {
+			item.ReconciledAt = &reconciledAt.Time
 		}
 		items = append(items, item)
 	}

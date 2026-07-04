@@ -56,8 +56,12 @@ Implemented first:
 - top products by clicks and imported conversion performance;
 - manual conversion import batches;
 - manual conversion import rows with optional product/link attribution.
+- CSV text parsing into conversion import rows.
+- CSV file upload into conversion import rows.
+- import reconciliation status, summary, and manual row matching.
+- deterministic import mapping from known affiliate links to their products.
 
-CSV upload, attribution reconciliation, richer dashboard filters, and materialized read models remain later slices.
+Dashboard filters, materialized read models, and marketplace-specific attribution heuristics remain later slices.
 
 ## Risks
 

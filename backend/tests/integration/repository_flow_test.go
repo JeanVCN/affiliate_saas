@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -88,14 +89,6 @@ func TestFirstSliceHTTPFlowWithPostgres(t *testing.T) {
 	if updatedCampaign.Status != "ready" {
 		t.Fatalf("campaign status = %q, want ready", updatedCampaign.Status)
 	}
-	complianceCheck := postJSON[complianceCheckResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/campaigns/"+campaign.ID+"/compliance-checks", `{
-		"channel":"tiktok",
-		"title":"Camera review",
-		"body":"Publi com link afiliado. Show the creator setup."
-	}`)
-	if len(complianceCheck.Findings) != 1 || complianceCheck.Findings[0].Code != "basic_check_passed" {
-		t.Fatalf("compliance check = %+v", complianceCheck)
-	}
 	campaigns := getJSON[[]campaignResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/campaigns")
 	if len(campaigns) != 1 || campaigns[0].ID != campaign.ID {
 		t.Fatalf("campaigns = %+v", campaigns)
@@ -106,24 +99,59 @@ func TestFirstSliceHTTPFlowWithPostgres(t *testing.T) {
 		"price_cents":129900,
 		"currency":"brl"
 	}`, program.ID))
+	policyNote := postJSON[programPolicyNoteResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/programs/"+program.ProgramID+"/policy-notes", `{
+		"title":"Disclosure required",
+		"body":"Use a visible affiliate disclosure in campaign content.",
+		"severity":"warning"
+	}`)
+	policyNotes := getJSON[[]programPolicyNoteResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/programs/"+program.ProgramID+"/policy-notes")
+	if len(policyNotes) != 1 || policyNotes[0].ID != policyNote.ID {
+		t.Fatalf("policy notes = %+v", policyNotes)
+	}
+	updatedPolicyNote := patchJSON[programPolicyNoteResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/programs/"+program.ProgramID+"/policy-notes/"+policyNote.ID, `{
+		"title":"Disclosure required before publishing",
+		"severity":"info"
+	}`)
+	if updatedPolicyNote.Title != "Disclosure required before publishing" || updatedPolicyNote.Severity != "info" {
+		t.Fatalf("updated policy note = %+v", updatedPolicyNote)
+	}
+	complianceCheck := postJSON[complianceCheckResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/campaigns/"+campaign.ID+"/compliance-checks", `{
+		"channel":"tiktok",
+		"title":"Camera review",
+		"body":"Publi com link afiliado. Show the creator setup."
+	}`)
+	if !hasFinding(complianceCheck.Findings, "basic_check_passed") || !hasFinding(complianceCheck.Findings, "program_policy_note") {
+		t.Fatalf("compliance check = %+v", complianceCheck)
+	}
 	link := postJSON[linkResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/links", fmt.Sprintf(`{
 		"product_id":%q,
 		"offer_id":%q,
 		"destination_url":"https://example.com/products/creator-camera",
 		"label":"TikTok bio"
 	}`, product.ID, offer.ID))
-	conversionImport := postJSON[conversionImportResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/conversion-imports", `{"source":"manual"}`)
-	conversionRow := postJSON[conversionImportRowResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/conversion-imports/"+conversionImport.ID+"/rows", fmt.Sprintf(`{
-		"product_id":%q,
-		"affiliate_link_id":%q,
-		"order_reference":"order-1001",
-		"gross_amount_cents":129900,
-		"commission_cents":12990,
-		"currency":"brl",
-		"raw_payload":{"source":"manual-fixture"}
-	}`, product.ID, link.ID))
+	conversionImport := postJSON[conversionImportResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/conversion-imports", `{"source":"csv"}`)
+	csvRows := "affiliate_link_id,order_reference,gross_amount_cents,commission_cents,currency\n" +
+		link.ID + ",order-1001,129900,12990,brl\n"
+	conversionRows := postMultipartFile[conversionCSVRowsResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/conversion-imports/"+conversionImport.ID+"/csv-upload", "conversions.csv", csvRows)
+	if len(conversionRows.Rows) != 1 {
+		t.Fatalf("csv conversion rows = %+v", conversionRows)
+	}
+	if conversionRows.Rows[0].ProductID != product.ID || conversionRows.Rows[0].AffiliateLinkID != link.ID {
+		t.Fatalf("csv conversion mapping = %+v", conversionRows.Rows[0])
+	}
+	reconciliation := getJSON[reconciliationSummaryResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/conversion-imports/"+conversionImport.ID+"/reconciliation")
+	if reconciliation.Matched != 1 {
+		t.Fatalf("reconciliation summary = %+v", reconciliation)
+	}
+	reconciledRow := patchJSON[conversionImportRowResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/conversion-imports/"+conversionImport.ID+"/rows/"+conversionRows.Rows[0].ID, `{
+		"reconciliation_status":"matched",
+		"reconciliation_note":"matched by uploaded marketplace report"
+	}`)
+	if reconciledRow.ReconciliationStatus != "matched" || reconciledRow.ReconciliationNote == "" {
+		t.Fatalf("reconciled row = %+v", reconciledRow)
+	}
 	conversionDetail := getJSON[conversionImportResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/conversion-imports/"+conversionImport.ID)
-	if conversionDetail.Source != "manual" || len(conversionDetail.Rows) != 1 || conversionDetail.Rows[0].ID != conversionRow.ID {
+	if conversionDetail.Source != "csv" || len(conversionDetail.Rows) != 1 || conversionDetail.Rows[0].ID != conversionRows.Rows[0].ID {
 		t.Fatalf("conversion import detail = %+v", conversionDetail)
 	}
 	shortLink := postJSON[shortLinkResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/links/"+link.ID+"/short-links", `{"slug":"creator-camera"}`)
@@ -249,6 +277,26 @@ func patchJSON[T any](t *testing.T, client *testClient, path string, body string
 	return doJSON[T](t, client, req, http.StatusOK)
 }
 
+func postMultipartFile[T any](t *testing.T, client *testClient, path string, filename string, content string) T {
+	t.Helper()
+
+	var body bytes.Buffer
+	writer := multipart.NewWriter(&body)
+	part, err := writer.CreateFormFile("file", filename)
+	if err != nil {
+		t.Fatalf("create multipart file: %v", err)
+	}
+	if _, err := part.Write([]byte(content)); err != nil {
+		t.Fatalf("write multipart file: %v", err)
+	}
+	if err := writer.Close(); err != nil {
+		t.Fatalf("close multipart writer: %v", err)
+	}
+	req := httptest.NewRequest(http.MethodPost, path, &body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+	return doJSON[T](t, client, req, http.StatusCreated)
+}
+
 func doJSON[T any](t *testing.T, client *testClient, req *http.Request, wantStatus int) T {
 	t.Helper()
 
@@ -271,88 +319,11 @@ func doJSON[T any](t *testing.T, client *testClient, req *http.Request, wantStat
 	return payload
 }
 
-type authResponse struct {
-	Workspaces []membershipResponse `json:"workspaces"`
-}
-
-type membershipResponse struct {
-	WorkspaceID string `json:"workspace_id"`
-}
-
-type workspaceProgramResponse struct {
-	ID string `json:"id"`
-}
-
-type productResponse struct {
-	ID string `json:"id"`
-}
-
-type campaignResponse struct {
-	ID              string                   `json:"id"`
-	ProductID       string                   `json:"product_id"`
-	Status          string                   `json:"status"`
-	ChannelPackages []channelPackageResponse `json:"channel_packages"`
-}
-
-type channelPackageResponse struct {
-	ID string `json:"id"`
-}
-
-type publishingTaskResponse struct {
-	ID          string `json:"id"`
-	Status      string `json:"status"`
-	CompletedAt string `json:"completed_at"`
-}
-
-type complianceCheckResponse struct {
-	ID       string                      `json:"id"`
-	Findings []complianceFindingResponse `json:"findings"`
-}
-
-type complianceFindingResponse struct {
-	Code string `json:"code"`
-}
-
-type offerResponse struct {
-	ID string `json:"id"`
-}
-
-type linkResponse struct {
-	ID string `json:"id"`
-}
-
-type conversionImportResponse struct {
-	ID     string                        `json:"id"`
-	Source string                        `json:"source"`
-	Rows   []conversionImportRowResponse `json:"rows"`
-}
-
-type conversionImportRowResponse struct {
-	ID string `json:"id"`
-}
-
-type shortLinkResponse struct {
-	Slug string `json:"slug"`
-}
-
-type clickMetricsResponse struct {
-	GroupBy string            `json:"group_by"`
-	Items   []clickMetricItem `json:"items"`
-}
-
-type clickMetricItem struct {
-	GroupID string `json:"group_id"`
-	Clicks  int64  `json:"clicks"`
-}
-
-type analyticsOverviewResponse struct {
-	Clicks              int64 `json:"clicks"`
-	ImportedConversions int64 `json:"imported_conversions"`
-	CommissionCents     int64 `json:"commission_cents"`
-}
-
-type topProductResponse struct {
-	ProductID           string `json:"product_id"`
-	Clicks              int64  `json:"clicks"`
-	ImportedConversions int64  `json:"imported_conversions"`
+func hasFinding(findings []complianceFindingResponse, code string) bool {
+	for _, finding := range findings {
+		if finding.Code == code {
+			return true
+		}
+	}
+	return false
 }

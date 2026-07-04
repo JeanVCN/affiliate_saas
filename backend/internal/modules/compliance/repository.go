@@ -10,6 +10,7 @@ import (
 
 type Repository interface {
 	CampaignContent(ctx context.Context, workspaceID string, campaignID string) (string, error)
+	CampaignPolicyNotes(ctx context.Context, workspaceID string, campaignID string) ([]PolicyNote, error)
 	CreateCampaignCheck(ctx context.Context, workspaceID string, campaignID string, findings []FindingInput) (Check, error)
 }
 
@@ -54,6 +55,33 @@ func (repo *PostgresRepository) CampaignContent(ctx context.Context, workspaceID
 		return "", common.ErrNotFound
 	}
 	return content.String(), nil
+}
+
+func (repo *PostgresRepository) CampaignPolicyNotes(ctx context.Context, workspaceID string, campaignID string) ([]PolicyNote, error) {
+	rows, err := repo.db.Query(ctx, `
+		SELECT DISTINCT ppn.severity, ppn.title, ppn.body
+		FROM campaigns c
+		JOIN products p ON p.id = c.product_id AND p.workspace_id = c.workspace_id
+		JOIN offers o ON o.product_id = p.id AND o.workspace_id = c.workspace_id AND o.archived_at IS NULL
+		JOIN workspace_programs wp ON wp.id = o.workspace_program_id AND wp.workspace_id = c.workspace_id AND wp.archived_at IS NULL
+		JOIN program_policy_notes ppn ON ppn.program_id = wp.program_id
+		WHERE c.id = $2 AND c.workspace_id = $1 AND c.archived_at IS NULL AND ppn.status = 'active'
+		ORDER BY ppn.severity DESC, ppn.title`,
+		workspaceID, campaignID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []PolicyNote
+	for rows.Next() {
+		var item PolicyNote
+		if err := rows.Scan(&item.Severity, &item.Title, &item.Body); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
 }
 
 func (repo *PostgresRepository) CreateCampaignCheck(ctx context.Context, workspaceID string, campaignID string, findings []FindingInput) (Check, error) {

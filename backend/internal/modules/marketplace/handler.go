@@ -24,6 +24,9 @@ func RegisterWorkspaceRoutes(workspace gin.IRouter, service *Service) {
 	handler := NewHandler(service)
 	workspace.GET("/programs", handler.ListWorkspacePrograms)
 	workspace.POST("/programs", handler.EnableWorkspaceProgram)
+	workspace.GET("/programs/:program_id/policy-notes", handler.ListProgramPolicyNotes)
+	workspace.POST("/programs/:program_id/policy-notes", handler.CreateProgramPolicyNote)
+	workspace.PATCH("/programs/:program_id/policy-notes/:note_id", handler.UpdateProgramPolicyNote)
 }
 
 func (handler *Handler) ListMarketplaces(c *gin.Context) {
@@ -47,4 +50,35 @@ func (handler *Handler) EnableWorkspaceProgram(c *gin.Context) {
 		return
 	}
 	common.Respond(c, item, err, http.StatusCreated)
+}
+
+func (handler *Handler) CreateProgramPolicyNote(c *gin.Context) {
+	var input CreateProgramPolicyNoteInput
+	if !common.BindJSON(c, &input) {
+		return
+	}
+	item, err := handler.service.CreateProgramPolicyNote(c.Request.Context(), c.Param("workspace_id"), c.Param("program_id"), input)
+	if common.IsValidationError(err) {
+		common.RespondValidationError(c, err)
+		return
+	}
+	common.Respond(c, item, err, http.StatusCreated)
+}
+
+func (handler *Handler) ListProgramPolicyNotes(c *gin.Context) {
+	items, err := handler.service.ListProgramPolicyNotes(c.Request.Context(), c.Param("workspace_id"), c.Param("program_id"))
+	common.Respond(c, items, err, http.StatusOK)
+}
+
+func (handler *Handler) UpdateProgramPolicyNote(c *gin.Context) {
+	var input UpdateProgramPolicyNoteInput
+	if !common.BindJSON(c, &input) {
+		return
+	}
+	item, err := handler.service.UpdateProgramPolicyNote(c.Request.Context(), c.Param("workspace_id"), c.Param("program_id"), c.Param("note_id"), input)
+	if common.IsValidationError(err) {
+		common.RespondValidationError(c, err)
+		return
+	}
+	common.Respond(c, item, err, http.StatusOK)
 }

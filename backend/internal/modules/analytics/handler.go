@@ -1,6 +1,8 @@
 package analytics
 
 import (
+	"errors"
+	"io"
 	"net/http"
 
 	"github.com/JeanVCN/affiliate_saas/backend/internal/modules/common"
@@ -22,6 +24,10 @@ func RegisterRoutes(api gin.IRouter, service *Service) {
 	api.GET("/workspaces/:workspace_id/analytics/top-products", handler.TopProducts)
 	api.POST("/workspaces/:workspace_id/conversion-imports", handler.CreateConversionImport)
 	api.POST("/workspaces/:workspace_id/conversion-imports/:import_id/rows", handler.CreateConversionImportRow)
+	api.POST("/workspaces/:workspace_id/conversion-imports/:import_id/csv-rows", handler.CreateConversionImportCSVRows)
+	api.POST("/workspaces/:workspace_id/conversion-imports/:import_id/csv-upload", handler.UploadConversionImportCSV)
+	api.GET("/workspaces/:workspace_id/conversion-imports/:import_id/reconciliation", handler.ReconciliationSummary)
+	api.PATCH("/workspaces/:workspace_id/conversion-imports/:import_id/rows/:row_id", handler.UpdateConversionImportRow)
 	api.GET("/workspaces/:workspace_id/conversion-imports/:import_id", handler.GetConversionImport)
 }
 
@@ -32,6 +38,10 @@ func RegisterWorkspaceRoutes(workspace gin.IRouter, service *Service) {
 	workspace.GET("/analytics/top-products", handler.TopProducts)
 	workspace.POST("/conversion-imports", handler.CreateConversionImport)
 	workspace.POST("/conversion-imports/:import_id/rows", handler.CreateConversionImportRow)
+	workspace.POST("/conversion-imports/:import_id/csv-rows", handler.CreateConversionImportCSVRows)
+	workspace.POST("/conversion-imports/:import_id/csv-upload", handler.UploadConversionImportCSV)
+	workspace.GET("/conversion-imports/:import_id/reconciliation", handler.ReconciliationSummary)
+	workspace.PATCH("/conversion-imports/:import_id/rows/:row_id", handler.UpdateConversionImportRow)
 	workspace.GET("/conversion-imports/:import_id", handler.GetConversionImport)
 }
 
@@ -81,7 +91,63 @@ func (handler *Handler) CreateConversionImportRow(c *gin.Context) {
 	common.Respond(c, item, err, http.StatusCreated)
 }
 
+func (handler *Handler) CreateConversionImportCSVRows(c *gin.Context) {
+	var input CreateConversionImportCSVInput
+	if !common.BindJSON(c, &input) {
+		return
+	}
+	items, err := handler.service.CreateConversionImportCSVRows(c.Request.Context(), c.Param("workspace_id"), c.Param("import_id"), input)
+	if common.IsValidationError(err) {
+		common.RespondValidationError(c, err)
+		return
+	}
+	common.Respond(c, gin.H{"rows": items}, err, http.StatusCreated)
+}
+
+func (handler *Handler) UploadConversionImportCSV(c *gin.Context) {
+	file, err := c.FormFile("file")
+	if err != nil {
+		common.RespondValidationError(c, errors.New("file is required"))
+		return
+	}
+	if file.Size > 2*1024*1024 {
+		common.RespondValidationError(c, errors.New("file must be 2MB or smaller"))
+		return
+	}
+	opened, err := file.Open()
+	if err != nil {
+		common.Respond(c, nil, err, http.StatusCreated)
+		return
+	}
+	defer opened.Close()
+
+	items, err := handler.service.CreateConversionImportCSVRowsFromReader(c.Request.Context(), c.Param("workspace_id"), c.Param("import_id"), io.LimitReader(opened, 2*1024*1024+1))
+	if common.IsValidationError(err) {
+		common.RespondValidationError(c, err)
+		return
+	}
+	common.Respond(c, gin.H{"rows": items}, err, http.StatusCreated)
+}
+
 func (handler *Handler) GetConversionImport(c *gin.Context) {
 	item, err := handler.service.GetConversionImport(c.Request.Context(), c.Param("workspace_id"), c.Param("import_id"))
+	common.Respond(c, item, err, http.StatusOK)
+}
+
+func (handler *Handler) ReconciliationSummary(c *gin.Context) {
+	item, err := handler.service.ReconciliationSummary(c.Request.Context(), c.Param("workspace_id"), c.Param("import_id"))
+	common.Respond(c, item, err, http.StatusOK)
+}
+
+func (handler *Handler) UpdateConversionImportRow(c *gin.Context) {
+	var input UpdateConversionImportRowInput
+	if !common.BindJSON(c, &input) {
+		return
+	}
+	item, err := handler.service.UpdateConversionImportRow(c.Request.Context(), c.Param("workspace_id"), c.Param("import_id"), c.Param("row_id"), input)
+	if common.IsValidationError(err) {
+		common.RespondValidationError(c, err)
+		return
+	}
 	common.Respond(c, item, err, http.StatusOK)
 }

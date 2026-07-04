@@ -11,6 +11,9 @@ type Repository interface {
 	ListMarketplaces(ctx context.Context) ([]Marketplace, error)
 	ListWorkspacePrograms(ctx context.Context, workspaceID string) ([]WorkspaceProgram, error)
 	EnableWorkspaceProgram(ctx context.Context, workspaceID string, input EnableWorkspaceProgramInput) (WorkspaceProgram, error)
+	CreateProgramPolicyNote(ctx context.Context, workspaceID string, programID string, input CreateProgramPolicyNoteInput) (ProgramPolicyNote, error)
+	ListProgramPolicyNotes(ctx context.Context, workspaceID string, programID string) ([]ProgramPolicyNote, error)
+	UpdateProgramPolicyNote(ctx context.Context, workspaceID string, programID string, noteID string, input UpdateProgramPolicyNoteInput) (ProgramPolicyNote, error)
 }
 
 type PostgresRepository struct {
@@ -117,6 +120,64 @@ func (repo *PostgresRepository) EnableWorkspaceProgram(ctx context.Context, work
 		return WorkspaceProgram{}, err
 	}
 	return repo.getWorkspaceProgram(ctx, workspaceID, workspaceProgramID)
+}
+
+func (repo *PostgresRepository) CreateProgramPolicyNote(ctx context.Context, workspaceID string, programID string, input CreateProgramPolicyNoteInput) (ProgramPolicyNote, error) {
+	item := ProgramPolicyNote{ID: common.NewID("ppn")}
+	err := repo.db.QueryRow(ctx, `
+		INSERT INTO program_policy_notes (id, program_id, title, body, severity, source_url)
+		SELECT $1, wp.program_id, $4, $5, $6, NULLIF($7, '')
+		FROM workspace_programs wp
+		WHERE wp.workspace_id = $2 AND wp.program_id = $3 AND wp.archived_at IS NULL
+		RETURNING id, program_id, title, body, severity, COALESCE(source_url, ''), status, created_at, updated_at`,
+		item.ID, workspaceID, programID, input.Title, input.Body, input.Severity, input.SourceURL,
+	).Scan(&item.ID, &item.ProgramID, &item.Title, &item.Body, &item.Severity, &item.SourceURL, &item.Status, &item.CreatedAt, &item.UpdatedAt)
+	return item, common.NormalizePostgresErr(err)
+}
+
+func (repo *PostgresRepository) ListProgramPolicyNotes(ctx context.Context, workspaceID string, programID string) ([]ProgramPolicyNote, error) {
+	rows, err := repo.db.Query(ctx, `
+		SELECT ppn.id, ppn.program_id, ppn.title, ppn.body, ppn.severity,
+		       COALESCE(ppn.source_url, ''), ppn.status, ppn.created_at, ppn.updated_at
+		FROM program_policy_notes ppn
+		JOIN workspace_programs wp ON wp.program_id = ppn.program_id
+		WHERE wp.workspace_id = $1 AND wp.program_id = $2 AND wp.archived_at IS NULL
+		ORDER BY ppn.updated_at DESC`, workspaceID, programID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var items []ProgramPolicyNote
+	for rows.Next() {
+		var item ProgramPolicyNote
+		if err := rows.Scan(&item.ID, &item.ProgramID, &item.Title, &item.Body, &item.Severity, &item.SourceURL, &item.Status, &item.CreatedAt, &item.UpdatedAt); err != nil {
+			return nil, err
+		}
+		items = append(items, item)
+	}
+	return items, rows.Err()
+}
+
+func (repo *PostgresRepository) UpdateProgramPolicyNote(ctx context.Context, workspaceID string, programID string, noteID string, input UpdateProgramPolicyNoteInput) (ProgramPolicyNote, error) {
+	var item ProgramPolicyNote
+	err := repo.db.QueryRow(ctx, `
+		UPDATE program_policy_notes ppn
+		SET title = COALESCE($4, ppn.title),
+		    body = COALESCE($5, ppn.body),
+		    severity = COALESCE($6, ppn.severity),
+		    source_url = COALESCE(NULLIF($7, ''), ppn.source_url),
+		    status = COALESCE($8, ppn.status),
+		    reviewed_at = now(),
+		    updated_at = now()
+		FROM workspace_programs wp
+		WHERE ppn.id = $3 AND ppn.program_id = $2
+		  AND wp.workspace_id = $1 AND wp.program_id = ppn.program_id AND wp.archived_at IS NULL
+		RETURNING ppn.id, ppn.program_id, ppn.title, ppn.body, ppn.severity,
+		          COALESCE(ppn.source_url, ''), ppn.status, ppn.created_at, ppn.updated_at`,
+		workspaceID, programID, noteID, input.Title, input.Body, input.Severity, input.SourceURL, input.Status,
+	).Scan(&item.ID, &item.ProgramID, &item.Title, &item.Body, &item.Severity, &item.SourceURL, &item.Status, &item.CreatedAt, &item.UpdatedAt)
+	return item, common.NormalizePostgresErr(err)
 }
 
 func (repo *PostgresRepository) getWorkspaceProgram(ctx context.Context, workspaceID string, workspaceProgramID string) (WorkspaceProgram, error) {

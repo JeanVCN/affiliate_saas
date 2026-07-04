@@ -32,28 +32,40 @@ type TopProduct struct {
 }
 
 type ConversionImport struct {
-	ID          string                `json:"id"`
-	WorkspaceID string                `json:"workspace_id"`
-	Source      string                `json:"source"`
-	Status      string                `json:"status"`
-	CreatedAt   time.Time             `json:"created_at"`
-	UpdatedAt   time.Time             `json:"updated_at"`
-	Rows        []ConversionImportRow `json:"rows,omitempty"`
+	ID          string                 `json:"id"`
+	WorkspaceID string                 `json:"workspace_id"`
+	Source      string                 `json:"source"`
+	Status      string                 `json:"status"`
+	CreatedAt   time.Time              `json:"created_at"`
+	UpdatedAt   time.Time              `json:"updated_at"`
+	Rows        []ConversionImportRow  `json:"rows,omitempty"`
+	Summary     *ReconciliationSummary `json:"reconciliation_summary,omitempty"`
 }
 
 type ConversionImportRow struct {
-	ID                 string          `json:"id"`
-	WorkspaceID        string          `json:"workspace_id"`
-	ConversionImportID string          `json:"conversion_import_id"`
-	ProductID          string          `json:"product_id,omitempty"`
-	AffiliateLinkID    string          `json:"affiliate_link_id,omitempty"`
-	OccurredAt         *time.Time      `json:"occurred_at,omitempty"`
-	OrderReference     string          `json:"order_reference,omitempty"`
-	GrossAmountCents   *int            `json:"gross_amount_cents,omitempty"`
-	CommissionCents    *int            `json:"commission_cents,omitempty"`
-	Currency           string          `json:"currency,omitempty"`
-	RawPayload         json.RawMessage `json:"raw_payload"`
-	CreatedAt          time.Time       `json:"created_at"`
+	ID                   string          `json:"id"`
+	WorkspaceID          string          `json:"workspace_id"`
+	ConversionImportID   string          `json:"conversion_import_id"`
+	ProductID            string          `json:"product_id,omitempty"`
+	AffiliateLinkID      string          `json:"affiliate_link_id,omitempty"`
+	OccurredAt           *time.Time      `json:"occurred_at,omitempty"`
+	OrderReference       string          `json:"order_reference,omitempty"`
+	GrossAmountCents     *int            `json:"gross_amount_cents,omitempty"`
+	CommissionCents      *int            `json:"commission_cents,omitempty"`
+	Currency             string          `json:"currency,omitempty"`
+	RawPayload           json.RawMessage `json:"raw_payload"`
+	ReconciliationStatus string          `json:"reconciliation_status"`
+	ReconciliationNote   string          `json:"reconciliation_note,omitempty"`
+	ReconciledAt         *time.Time      `json:"reconciled_at,omitempty"`
+	CreatedAt            time.Time       `json:"created_at"`
+}
+
+type ReconciliationSummary struct {
+	Total     int64 `json:"total"`
+	Pending   int64 `json:"pending"`
+	Matched   int64 `json:"matched"`
+	Unmatched int64 `json:"unmatched"`
+	Ignored   int64 `json:"ignored"`
 }
 
 type CreateConversionImportInput struct {
@@ -69,6 +81,17 @@ type CreateConversionImportRowInput struct {
 	CommissionCents  *int           `json:"commission_cents"`
 	Currency         string         `json:"currency"`
 	RawPayload       map[string]any `json:"raw_payload"`
+}
+
+type CreateConversionImportCSVInput struct {
+	CSV string `json:"csv"`
+}
+
+type UpdateConversionImportRowInput struct {
+	ProductID            *string `json:"product_id"`
+	AffiliateLinkID      *string `json:"affiliate_link_id"`
+	ReconciliationStatus *string `json:"reconciliation_status"`
+	ReconciliationNote   *string `json:"reconciliation_note"`
 }
 
 func (input *CreateConversionImportInput) Normalize() {
@@ -103,4 +126,33 @@ func (input CreateConversionImportRowInput) Validate() error {
 		return common.NewValidationError("product_id, affiliate_link_id, or order_reference is required")
 	}
 	return nil
+}
+
+func (input *UpdateConversionImportRowInput) Normalize() {
+	trimStringPtr(&input.ProductID)
+	trimStringPtr(&input.AffiliateLinkID)
+	trimStringPtr(&input.ReconciliationNote)
+	if input.ReconciliationStatus != nil {
+		value := strings.ToLower(strings.TrimSpace(*input.ReconciliationStatus))
+		input.ReconciliationStatus = &value
+	}
+}
+
+func (input UpdateConversionImportRowInput) Validate() error {
+	if input.ReconciliationStatus != nil && !isReconciliationStatus(*input.ReconciliationStatus) {
+		return common.NewValidationError("reconciliation_status must be pending, matched, unmatched, or ignored")
+	}
+	return nil
+}
+
+func isReconciliationStatus(value string) bool {
+	return value == "pending" || value == "matched" || value == "unmatched" || value == "ignored"
+}
+
+func trimStringPtr(value **string) {
+	if *value == nil {
+		return
+	}
+	trimmed := strings.TrimSpace(**value)
+	*value = &trimmed
 }

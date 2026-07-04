@@ -2,6 +2,7 @@ package analytics
 
 import (
 	"context"
+	"io"
 
 	"github.com/JeanVCN/affiliate_saas/backend/internal/modules/common"
 )
@@ -48,6 +49,34 @@ func (service *Service) CreateConversionImportRow(ctx context.Context, workspace
 	return service.repo.CreateConversionImportRow(ctx, workspaceID, importID, input)
 }
 
+func (service *Service) CreateConversionImportCSVRows(ctx context.Context, workspaceID string, importID string, input CreateConversionImportCSVInput) ([]ConversionImportRow, error) {
+	rows, err := ParseConversionCSV(input.CSV)
+	if err != nil {
+		return nil, err
+	}
+	return service.repo.CreateConversionImportRows(ctx, workspaceID, importID, rows)
+}
+
+func (service *Service) CreateConversionImportCSVRowsFromReader(ctx context.Context, workspaceID string, importID string, reader io.Reader) ([]ConversionImportRow, error) {
+	rows, err := ParseConversionCSVReader(reader)
+	if err != nil {
+		return nil, err
+	}
+	return service.repo.CreateConversionImportRows(ctx, workspaceID, importID, rows)
+}
+
 func (service *Service) GetConversionImport(ctx context.Context, workspaceID string, importID string) (ConversionImport, error) {
 	return service.repo.GetConversionImport(ctx, workspaceID, importID)
+}
+
+func (service *Service) ReconciliationSummary(ctx context.Context, workspaceID string, importID string) (ReconciliationSummary, error) {
+	return service.repo.ReconciliationSummary(ctx, workspaceID, importID)
+}
+
+func (service *Service) UpdateConversionImportRow(ctx context.Context, workspaceID string, importID string, rowID string, input UpdateConversionImportRowInput) (ConversionImportRow, error) {
+	input.Normalize()
+	if err := input.Validate(); err != nil {
+		return ConversionImportRow{}, err
+	}
+	return service.repo.UpdateConversionImportRow(ctx, workspaceID, importID, rowID, input)
 }

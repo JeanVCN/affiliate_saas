@@ -24,6 +24,11 @@ func (service *Service) RunCampaignCheck(ctx context.Context, workspaceID string
 		}
 	}
 	findings := evaluateContent(content)
+	policyNotes, err := service.repo.CampaignPolicyNotes(ctx, workspaceID, campaignID)
+	if err != nil {
+		return Check{}, err
+	}
+	findings = append(findings, policyNoteFindings(policyNotes)...)
 	return service.repo.CreateCampaignCheck(ctx, workspaceID, campaignID, findings)
 }
 
@@ -75,4 +80,16 @@ func containsAny(content string, needles ...string) bool {
 		}
 	}
 	return false
+}
+
+func policyNoteFindings(notes []PolicyNote) []FindingInput {
+	findings := make([]FindingInput, 0, len(notes))
+	for _, note := range notes {
+		findings = append(findings, FindingInput{
+			Severity: note.Severity,
+			Code:     "program_policy_note",
+			Message:  note.Title + ": " + note.Body,
+		})
+	}
+	return findings
 }

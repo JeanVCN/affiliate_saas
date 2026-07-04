@@ -58,6 +58,8 @@ Implemented first:
 - flag unsupported absolute claims as blockers;
 - warn on price or availability claims that must be checked against product truth;
 - flag prohibited automation or artificial engagement references.
+- attach manual marketplace/program policy notes as findings when campaign products map to configured programs.
+- support review and archive workflow for manual policy notes.
 
 This is an MVP guardrail, not legal approval.
 

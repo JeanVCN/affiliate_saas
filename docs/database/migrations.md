@@ -36,6 +36,12 @@ Use ordered filenames:
 000004_create_oauth_identities.down.sql
 000005_create_publishing_tasks.up.sql
 000005_create_publishing_tasks.down.sql
+000006_create_program_policy_notes.up.sql
+000006_create_program_policy_notes.down.sql
+000007_add_program_policy_note_status.up.sql
+000007_add_program_policy_note_status.down.sql
+000008_add_conversion_reconciliation.up.sql
+000008_add_conversion_reconciliation.down.sql
 ```
 
 ## Rules
@@ -67,6 +73,9 @@ Split initial migrations by dependency order:
 5. Imports: conversion imports and rows.
 6. OAuth readiness: OAuth identities and short-lived OAuth states.
 7. Publishing tasks: manual campaign publishing/calendar tasks.
+8. Program policy notes: dated manual compliance context for affiliate programs.
+9. Program policy note status: review/archive workflow for policy notes.
+10. Conversion reconciliation: import-row matching status and review notes.
 
 ## Verification
 

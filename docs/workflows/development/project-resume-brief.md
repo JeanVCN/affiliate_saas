@@ -18,7 +18,7 @@ Use this file when resuming the project in a new chat or with a fresh agent.
 
 Phase 0 is complete. Phase 1 foundational ADRs are accepted. Phase 2 MVP domain docs are complete. Phase 3 API/database baseline docs are complete. Phase 4 quality/security/local-dev docs are complete. Phase 5 AI/MCP/code-index docs are complete.
 
-The repository now contains documentation plus a modular Go/Gin backend. The first backend slice has repository-backed modules for auth/session, workspace setup, marketplace/program setup, products/offers, affiliate links, short-link redirects, click recording, click analytics, analytics overview/top products, manual campaign drafts with channel packages, manual publishing tasks, manual conversion import batches/rows, and basic campaign compliance checks. Auth includes signup, login, logout, `me`, Argon2id password hashing, HttpOnly session cookies, workspace RBAC, and OAuth readiness tables without provider token storage. There is intentionally no frontend app or AI/product automation yet.
+The repository now contains documentation plus a modular Go/Gin backend. The first backend slice has repository-backed modules for auth/session, workspace setup, marketplace/program setup, products/offers, affiliate links, short-link redirects, click recording, click analytics, analytics overview/top products, manual campaign drafts with channel packages, manual publishing tasks, manual/CSV conversion import batches and rows including CSV upload, and basic campaign compliance checks. Auth includes signup, login, logout, `me`, Argon2id password hashing, HttpOnly session cookies, workspace RBAC, and OAuth readiness tables without provider token storage. There is intentionally no frontend app or AI/product automation yet.
 
 ## Product Direction
 
@@ -121,8 +121,8 @@ The campaign/import slices now add:
 ```text
 product -> manual campaign draft -> channel package -> campaign status update
 campaign -> manual publishing task -> task completion
-campaign/content -> basic compliance check -> findings
-product/link -> manual conversion import -> conversion import row
+campaign/content/program policy notes -> basic compliance check -> findings
+product/link -> manual or CSV upload conversion import -> conversion import row
 click/import data -> analytics overview -> top products
 ```
 

@@ -53,6 +53,9 @@ Auth rules:
 | `GET` | `/api/v1/marketplaces` | Marketplace | List supported marketplace/program definitions. |
 | `GET` | `/api/v1/workspaces/{workspace_id}/programs` | Marketplace | List workspace-enabled programs. |
 | `POST` | `/api/v1/workspaces/{workspace_id}/programs` | Marketplace | Enable/configure a manual affiliate program. |
+| `GET` | `/api/v1/workspaces/{workspace_id}/programs/{program_id}/policy-notes` | Marketplace | List manual policy notes for a program. |
+| `POST` | `/api/v1/workspaces/{workspace_id}/programs/{program_id}/policy-notes` | Marketplace | Add a dated manual policy note for compliance context. |
+| `PATCH` | `/api/v1/workspaces/{workspace_id}/programs/{program_id}/policy-notes/{note_id}` | Marketplace | Review, update, or archive a policy note. |
 | `PATCH` | `/api/v1/workspaces/{workspace_id}/programs/{program_id}` | Marketplace | Update workspace program settings or status. |
 
 ## Products And Offers
@@ -102,8 +105,12 @@ Auth rules:
 
 | Method | Path | Domain | Purpose |
 |---|---|---|---|
-| `POST` | `/api/v1/workspaces/{workspace_id}/conversion-imports` | Analytics | Create a manual import batch. |
-| `POST` | `/api/v1/workspaces/{workspace_id}/conversion-imports/{import_id}/rows` | Analytics | Add manual conversion rows before CSV upload exists. |
+| `POST` | `/api/v1/workspaces/{workspace_id}/conversion-imports` | Analytics | Create a manual or CSV import batch. |
+| `POST` | `/api/v1/workspaces/{workspace_id}/conversion-imports/{import_id}/rows` | Analytics | Add manual conversion rows. |
+| `POST` | `/api/v1/workspaces/{workspace_id}/conversion-imports/{import_id}/csv-rows` | Analytics | Parse CSV text into conversion rows. |
+| `POST` | `/api/v1/workspaces/{workspace_id}/conversion-imports/{import_id}/csv-upload` | Analytics | Upload a CSV file into conversion rows. |
+| `GET` | `/api/v1/workspaces/{workspace_id}/conversion-imports/{import_id}/reconciliation` | Analytics | Summarize matched, pending, ignored, and unmatched rows. |
+| `PATCH` | `/api/v1/workspaces/{workspace_id}/conversion-imports/{import_id}/rows/{row_id}` | Analytics | Reconcile a conversion row manually. |
 | `GET` | `/api/v1/workspaces/{workspace_id}/conversion-imports/{import_id}` | Analytics | Read import status and row summary. |
 
 ## Deferred From MVP Contract

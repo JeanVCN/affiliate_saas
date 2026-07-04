@@ -36,6 +36,12 @@ type FindingInput struct {
 	Message  string
 }
 
+type PolicyNote struct {
+	Severity string
+	Title    string
+	Body     string
+}
+
 func (input *RunCampaignCheckInput) Normalize() {
 	input.Channel = strings.ToLower(strings.TrimSpace(input.Channel))
 	input.Title = strings.TrimSpace(input.Title)

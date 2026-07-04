@@ -51,13 +51,15 @@ Build the smallest vertical slice:
 9. Manual conversion import batches and rows. Implemented for API-backed manual imports.
 10. Compliance checklist data model and campaign check execution. Implemented for basic MVP rules.
 11. Manual publishing tasks. Implemented for campaign task creation, listing, scheduling, and completion.
+12. CSV conversion import parsing. Implemented for CSV text payloads into import rows.
+13. Program policy notes for compliance context. Implemented as manual notes attached to campaign checks.
 
 ## Phase D: AI And Imports
 
 - Add provider abstraction.
 - Add prompt templates for TikTok Shop/Shopee/Mercado Livre/Amazon playbooks.
-- Add CSV upload/parsing for conversions/commissions after manual import flow is stable.
-- Expand compliance rules and policy notes after the basic campaign checklist is stable.
+- Add richer import mapping rules after manual reconciliation is stable. Started with deterministic product mapping from known affiliate links.
+- Expand compliance rules after manual policy notes and review workflow are stable.
 
 ## Phase E: Frontend Foundation
 
@@ -75,8 +77,8 @@ Stabilize the first backend slice before frontend or AI work:
 3. Verify the first slice end-to-end:
 
 ```text
-workspace -> marketplace program -> product -> campaign -> channel package -> compliance check -> publishing task -> offer -> affiliate link -> conversion import -> short redirect -> click event -> analytics query
+workspace -> marketplace program -> policy note -> product -> campaign -> channel package -> compliance check -> publishing task -> offer -> affiliate link -> CSV upload import -> import reconciliation -> short redirect -> click event -> analytics query
 ```
 
 4. Keep AI generation, marketplace integrations, provider OAuth token storage, and frontend scaffold out until this backend slice is committed.
-5. Next candidates after this backend checkpoint: CSV import parsing, richer compliance policy notes, or frontend foundation once approved.
+5. Next candidates after this backend checkpoint: richer compliance rule sets, AI/provider abstraction, or frontend foundation once approved.
