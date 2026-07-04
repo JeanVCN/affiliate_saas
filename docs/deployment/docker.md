@@ -2,7 +2,7 @@
 title: Docker Deployment Baseline
 status: active
 owner: infrastructure-engineer
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - ../architecture/system-overview.md
@@ -25,11 +25,14 @@ Initial local stack once code exists:
 
 ## Expected Compose Shape
 
-Future `docker-compose.yml` should provide:
+Current `docker-compose.yml` provides:
+
+- `postgres`
+
+Future local Compose growth should add:
 
 - `api`
 - `frontend`
-- `postgres`
 - `redis` when needed
 - `migrate` one-shot job or documented migration command
 
@@ -38,6 +41,7 @@ Future `docker-compose.yml` should provide:
 Use safe local defaults in `.env.example` once code exists:
 
 - `DATABASE_URL`
+- `AFFILIATE_TEST_DATABASE_URL`
 - `SESSION_SECRET`
 - `APP_ENV`
 - `API_BASE_URL`

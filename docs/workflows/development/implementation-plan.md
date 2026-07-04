@@ -2,7 +2,7 @@
 title: Initial Implementation Plan
 status: active
 owner: system-architect
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - ../../product/roadmap.md
@@ -29,9 +29,9 @@ Do not start this phase until Phase 1 ADRs are accepted.
 - Choose Go HTTP router/framework via ADR. Done in `docs/decisions/adr/002-http-router-framework.md`.
 - Choose migration tool via ADR. Done in `docs/decisions/adr/003-database-migration-tool.md`.
 - Define project layout under `backend/`. Done in `docs/decisions/adr/001-backend-module-layout.md`.
-- Add health endpoint.
-- Add config loading.
-- Add PostgreSQL connection layer.
+- Add health endpoint. Done in `backend/internal/http`.
+- Add config loading. Done in `backend/internal/config`.
+- Add PostgreSQL connection layer. Done in `backend/internal/platform/postgres`.
 - Add Redis Streams abstraction only when first async job appears.
 
 ## Phase C: MVP Domain Slice
@@ -40,13 +40,13 @@ Do not start this phase until Phase 2 domain docs and Phase 3 API/database basel
 
 Build the smallest vertical slice:
 
-1. Workspace/user placeholder model.
-2. Marketplace program registry.
-3. Product registry.
-4. Affiliate link registry.
-5. Short-link redirect and click event.
-6. Campaign draft generated manually first, AI later.
-7. Dashboard-ready query for clicks by link/product.
+1. Workspace/user placeholder model. Implemented for workspace endpoints.
+2. Marketplace program registry. Implemented for manual marketplace/program setup.
+3. Product registry. Implemented for products and offers.
+4. Affiliate link registry. Implemented for destination links.
+5. Short-link redirect and click event. Implemented for `/r/{slug}`.
+6. Campaign draft generated manually first, AI later. Not started.
+7. Dashboard-ready query for clicks by link/product. Implemented for click metrics.
 
 ## Phase D: AI And Imports
 
@@ -64,12 +64,15 @@ Build the smallest vertical slice:
 
 ## Current Next Action
 
-Start the first implementation slice:
+Stabilize the first backend slice before frontend or AI work:
 
-1. Implement repository-backed workspace endpoints.
-2. Implement marketplace program setup endpoints.
-3. Implement product and offer endpoints.
-4. Implement affiliate link and short-link endpoints.
-5. Implement `/r/{slug}` click recording and redirect.
-6. Implement dashboard query for clicks by product/link.
-7. Keep AI generation, marketplace integrations, OAuth, and frontend scaffold out until this slice is stable.
+1. Run the normal backend suite: `GOCACHE=/tmp/affiliate-saas-go-cache go test ./...`.
+2. Run the PostgreSQL integration test with `AFFILIATE_TEST_DATABASE_URL`.
+3. Verify the first slice end-to-end:
+
+```text
+workspace -> marketplace program -> product -> offer -> affiliate link -> short redirect -> click event -> analytics query
+```
+
+4. Keep AI generation, marketplace integrations, OAuth, and frontend scaffold out until this backend slice is stable.
+5. After this slice is proven against PostgreSQL, choose between session/auth hardening and manual campaign draft endpoints.

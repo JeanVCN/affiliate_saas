@@ -2,7 +2,7 @@
 title: Project Resume Brief
 status: active
 owner: system-architect
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - documentation-phases.md
@@ -16,9 +16,9 @@ Use this file when resuming the project in a new chat or with a fresh agent.
 
 ## Current State
 
-Phase 0 is complete. Phase 1 foundational ADRs are accepted. Phase 2 MVP domain docs are complete. Phase 3 API/database baseline docs are complete. Phase 4 quality/security/local-dev docs are complete. Phase 5 AI/MCP/code-index docs are complete. Backend implementation has started with a Go/Gin scaffold, health endpoint, config loading, PostgreSQL connection layer, and initial SQL migrations.
+Phase 0 is complete. Phase 1 foundational ADRs are accepted. Phase 2 MVP domain docs are complete. Phase 3 API/database baseline docs are complete. Phase 4 quality/security/local-dev docs are complete. Phase 5 AI/MCP/code-index docs are complete.
 
-The repository now contains documentation plus the initial backend module. There is intentionally no frontend app or AI/product automation yet.
+The repository now contains documentation plus a modular Go/Gin backend. The first backend slice has repository-backed modules for workspace setup, marketplace/program setup, products/offers, affiliate links, short-link redirects, click recording, and click analytics. There is intentionally no frontend app or AI/product automation yet.
 
 ## Product Direction
 
@@ -107,14 +107,22 @@ For architecture context, load:
 
 ## Next Phase
 
-The next phase is product implementation.
+The next phase is backend stabilization for the first product slice.
 
 Continue with:
 
-- repository-backed endpoints for the first vertical slice:
+- PostgreSQL-backed validation for the first vertical slice:
 
 ```text
-workspace -> marketplace program -> product -> affiliate link -> short redirect -> click event -> dashboard query
+workspace -> marketplace program -> product -> offer -> affiliate link -> short redirect -> click event -> analytics query
+```
+
+Run:
+
+```bash
+cd backend
+GOCACHE=/tmp/affiliate-saas-go-cache go test ./...
+AFFILIATE_TEST_DATABASE_URL='postgres://user:password@localhost:5432/affiliate_saas_test?sslmode=disable' GOCACHE=/tmp/affiliate-saas-go-cache go test ./tests/integration
 ```
 
 ## Keep Out Of First Slice
@@ -127,10 +135,10 @@ workspace -> marketplace program -> product -> affiliate link -> short redirect 
 
 ## Suggested Next Commit
 
-Commit current documentation foundation as:
+Commit the modular backend slice as:
 
 ```text
-docs: complete product development documentation base
+refactor: organize backend into domain modules
 ```
 
 ## Validation For Phase 0

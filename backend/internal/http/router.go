@@ -3,13 +3,15 @@ package httpapi
 import (
 	"net/http"
 
+	"github.com/JeanVCN/affiliate_saas/backend/internal/modules"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 type Dependencies struct {
-	AppEnv string
-	DB     *pgxpool.Pool
+	AppEnv  string
+	DB      *pgxpool.Pool
+	Modules modules.Dependencies
 }
 
 func NewRouter(deps Dependencies) *gin.Engine {
@@ -28,6 +30,14 @@ func NewRouter(deps Dependencies) *gin.Engine {
 			},
 		})
 	})
+
+	moduleDeps := deps.Modules
+	if moduleDeps.DB == nil {
+		moduleDeps.DB = deps.DB
+	}
+	if moduleDeps.HasServices() {
+		modules.RegisterRoutes(router, moduleDeps)
+	}
 
 	return router
 }

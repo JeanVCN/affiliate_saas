@@ -2,7 +2,7 @@
 title: System Overview
 status: active
 owner: system-architect
-last_verified_at: 2026-07-01
+last_verified_at: 2026-07-04
 source_of_truth: true
 ---
 
@@ -11,6 +11,8 @@ source_of_truth: true
 ## Architecture Style
 
 Start as a modular monolith with clear domain boundaries and async workers. Do not start with microservices. Extract services only when operational load, team ownership, or scaling requirements justify it.
+
+Backend domains live under `backend/internal/modules/*`. Each active module should grow around `handler.go`, `service.go`, `repository.go`, and `models.go` so the first implementation can evolve into the long-term product architecture instead of being a throwaway MVP layer. Route registration should point to named handler methods, and Go files should stay at or below 400 lines; split large handlers, services, or repositories by responsibility before they become catch-all files.
 
 ## Preferred Stack
 

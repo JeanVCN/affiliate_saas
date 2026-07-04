@@ -2,7 +2,7 @@
 title: Local Development
 status: active
 owner: infrastructure-engineer
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - ../deployment/docker.md
@@ -32,10 +32,44 @@ cd backend
 GOCACHE=/tmp/affiliate-saas-go-cache go test ./...
 ```
 
+The normal test suite is expected to pass without local services. PostgreSQL integration tests are skipped unless `AFFILIATE_TEST_DATABASE_URL` is set.
+
 Expected services:
 
 - PostgreSQL for persistence once repository endpoints are implemented.
 - Redis only after async jobs are introduced.
+
+## Local PostgreSQL
+
+From the repository root:
+
+```bash
+docker compose up -d postgres
+```
+
+The local PostgreSQL URL exposed to host-run backend commands is:
+
+```bash
+postgres://affiliate:affiliate@localhost:55432/affiliate_saas?sslmode=disable
+```
+
+## Backend Integration Test
+
+Use a disposable local PostgreSQL database and set:
+
+```bash
+export AFFILIATE_TEST_DATABASE_URL='postgres://affiliate:affiliate@localhost:55432/affiliate_saas?sslmode=disable'
+cd backend
+GOCACHE=/tmp/affiliate-saas-go-cache go test ./tests/integration
+```
+
+The integration test creates an isolated PostgreSQL schema, applies all `backend/migrations/*.up.sql` files, and exercises the first product slice through HTTP:
+
+```text
+workspace -> marketplace program -> product -> offer -> affiliate link -> short redirect -> click event -> analytics query
+```
+
+Do not point `AFFILIATE_TEST_DATABASE_URL` at a production or shared database.
 
 ## Future Frontend Workflow
 
