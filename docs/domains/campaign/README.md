@@ -2,7 +2,7 @@
 title: Campaign Domain
 status: active
 owner: system-architect
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - ../../product/vision.md
@@ -52,7 +52,16 @@ Campaign owns planned promotional work: campaign drafts, channel packages, conte
 
 ## First Vertical Slice
 
-The first slice can create a manual campaign draft first, then add AI generation after product/link/tracking contracts are stable.
+Implemented first:
+
+- list campaign drafts in a workspace;
+- create a manual campaign draft tied to an optional product;
+- read campaign detail with channel packages;
+- update campaign name or status;
+- add draft channel packages manually.
+- create, list, schedule, and complete manual publishing tasks.
+
+AI generation remains a later slice. Publishing tasks are manual only; no browser automation or automated posting is allowed in the MVP.
 
 ## Risks
 

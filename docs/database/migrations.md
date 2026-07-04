@@ -34,6 +34,8 @@ Use ordered filenames:
 000003_create_campaign_compliance_imports.down.sql
 000004_create_oauth_identities.up.sql
 000004_create_oauth_identities.down.sql
+000005_create_publishing_tasks.up.sql
+000005_create_publishing_tasks.down.sql
 ```
 
 ## Rules
@@ -61,9 +63,10 @@ Split initial migrations by dependency order:
 1. Identity: users, workspaces, memberships, sessions.
 2. Marketplace and product: marketplaces, programs, workspace programs, products, offers.
 3. Affiliate and tracking: affiliate links, link variants, short links, click events.
-4. Campaign and compliance: campaigns, channel packages, publishing tasks, compliance checks/findings.
+4. Campaign and compliance: campaigns, channel packages, compliance checks/findings.
 5. Imports: conversion imports and rows.
 6. OAuth readiness: OAuth identities and short-lived OAuth states.
+7. Publishing tasks: manual campaign publishing/calendar tasks.
 
 ## Verification
 

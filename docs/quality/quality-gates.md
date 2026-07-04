@@ -17,14 +17,14 @@ Quality gates define the minimum checks before merging or presenting work.
 
 During active implementation, prefer focused checks that match the files or package being changed. Avoid repeating full test suites, broad `git diff`, or detailed `git status` output after every small edit.
 
-Run complete gates when a stage is ready for review, before committing, before presenting work as complete, or earlier when the change is high risk.
+Run complete gates only when the user asks to validate, review, close a stage, commit, or explicitly says the current task is the last step before commit. If the user only says to continue, implement the next focused slice and leave full validation pending.
 
-High-risk changes include auth, RBAC, sessions, migrations, billing, data deletion, external integrations, secrets handling, and tracking/privacy behavior.
+High-risk changes include auth, RBAC, sessions, migrations, billing, data deletion, external integrations, secrets handling, and tracking/privacy behavior. For high-risk changes, prefer focused tests first and ask or clearly state why broader validation is needed before running expensive checks.
 
 Git usage:
 
 - use targeted diffs while implementing, such as a specific file or package;
-- use broad `git status` and full diffs at checkpoints, review, or commit time;
+- use broad `git status` and full diffs only at checkpoints, review, or commit time;
 - never include secrets, OAuth tokens, customer data, or private exports in diffs or commits;
 - do not commit until the relevant gate has passed or any skipped check is explicitly called out.
 

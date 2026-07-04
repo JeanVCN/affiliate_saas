@@ -85,6 +85,9 @@ Auth rules:
 | `GET` | `/api/v1/workspaces/{workspace_id}/campaigns/{campaign_id}` | Campaign | Read campaign detail. |
 | `PATCH` | `/api/v1/workspaces/{workspace_id}/campaigns/{campaign_id}` | Campaign | Update campaign draft/status. |
 | `POST` | `/api/v1/workspaces/{workspace_id}/campaigns/{campaign_id}/channel-packages` | Campaign | Add channel-specific package. |
+| `GET` | `/api/v1/workspaces/{workspace_id}/campaigns/{campaign_id}/publishing-tasks` | Campaign | List manual publishing tasks. |
+| `POST` | `/api/v1/workspaces/{workspace_id}/campaigns/{campaign_id}/publishing-tasks` | Campaign | Create a manual publishing task. |
+| `PATCH` | `/api/v1/workspaces/{workspace_id}/campaigns/{campaign_id}/publishing-tasks/{task_id}` | Campaign | Update publishing task status or schedule. |
 | `POST` | `/api/v1/workspaces/{workspace_id}/campaigns/{campaign_id}/compliance-checks` | Compliance | Run compliance checks for campaign content. |
 
 ## Analytics

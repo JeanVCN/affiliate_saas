@@ -23,3 +23,31 @@ func (service *Service) ClickMetrics(ctx context.Context, workspaceID string, gr
 	}
 	return service.repo.ClickMetrics(ctx, workspaceID, groupBy)
 }
+
+func (service *Service) Overview(ctx context.Context, workspaceID string) (Overview, error) {
+	return service.repo.Overview(ctx, workspaceID)
+}
+
+func (service *Service) TopProducts(ctx context.Context, workspaceID string) ([]TopProduct, error) {
+	return service.repo.TopProducts(ctx, workspaceID)
+}
+
+func (service *Service) CreateConversionImport(ctx context.Context, workspaceID string, input CreateConversionImportInput) (ConversionImport, error) {
+	input.Normalize()
+	if err := input.Validate(); err != nil {
+		return ConversionImport{}, err
+	}
+	return service.repo.CreateConversionImport(ctx, workspaceID, input)
+}
+
+func (service *Service) CreateConversionImportRow(ctx context.Context, workspaceID string, importID string, input CreateConversionImportRowInput) (ConversionImportRow, error) {
+	input.Normalize()
+	if err := input.Validate(); err != nil {
+		return ConversionImportRow{}, err
+	}
+	return service.repo.CreateConversionImportRow(ctx, workspaceID, importID, input)
+}
+
+func (service *Service) GetConversionImport(ctx context.Context, workspaceID string, importID string) (ConversionImport, error) {
+	return service.repo.GetConversionImport(ctx, workspaceID, importID)
+}

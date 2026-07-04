@@ -2,7 +2,7 @@
 title: Analytics Domain
 status: active
 owner: system-architect
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - ../../product/vision.md
@@ -49,7 +49,15 @@ Analytics owns read models and performance insights built from click events, imp
 
 ## First Vertical Slice
 
-Start with click-only dashboard queries: clicks by link/product and top clicked products. Add conversion imports after API and database contracts are documented.
+Implemented first:
+
+- click metrics grouped by product or link;
+- analytics overview with clicks, imported conversions, gross amount, and commission;
+- top products by clicks and imported conversion performance;
+- manual conversion import batches;
+- manual conversion import rows with optional product/link attribution.
+
+CSV upload, attribution reconciliation, richer dashboard filters, and materialized read models remain later slices.
 
 ## Risks
 

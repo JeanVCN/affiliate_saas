@@ -57,6 +57,49 @@ func TestFirstSliceHTTPFlowWithPostgres(t *testing.T) {
 		"name":"Creator Camera",
 		"category":"electronics"
 	}`)
+	campaign := postJSON[campaignResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/campaigns", fmt.Sprintf(`{
+		"product_id":%q,
+		"name":"Creator Camera Launch"
+	}`, product.ID))
+	channelPackage := postJSON[channelPackageResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/campaigns/"+campaign.ID+"/channel-packages", `{
+		"channel":"TikTok",
+		"title":"Camera review",
+		"body":"Show the creator setup and disclose the affiliate link."
+	}`)
+	campaignDetail := getJSON[campaignResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/campaigns/"+campaign.ID)
+	if campaignDetail.ProductID != product.ID || len(campaignDetail.ChannelPackages) != 1 || campaignDetail.ChannelPackages[0].ID != channelPackage.ID {
+		t.Fatalf("campaign detail = %+v", campaignDetail)
+	}
+	task := postJSON[publishingTaskResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/campaigns/"+campaign.ID+"/publishing-tasks", fmt.Sprintf(`{
+		"channel_package_id":%q,
+		"channel":"tiktok",
+		"title":"Publish camera review",
+		"notes":"Manual publish only"
+	}`, channelPackage.ID))
+	updatedTask := patchJSON[publishingTaskResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/campaigns/"+campaign.ID+"/publishing-tasks/"+task.ID, `{"status":"done"}`)
+	if updatedTask.Status != "done" || updatedTask.CompletedAt == "" {
+		t.Fatalf("updated publishing task = %+v", updatedTask)
+	}
+	tasks := getJSON[[]publishingTaskResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/campaigns/"+campaign.ID+"/publishing-tasks")
+	if len(tasks) != 1 || tasks[0].ID != task.ID {
+		t.Fatalf("publishing tasks = %+v", tasks)
+	}
+	updatedCampaign := patchJSON[campaignResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/campaigns/"+campaign.ID, `{"status":"ready"}`)
+	if updatedCampaign.Status != "ready" {
+		t.Fatalf("campaign status = %q, want ready", updatedCampaign.Status)
+	}
+	complianceCheck := postJSON[complianceCheckResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/campaigns/"+campaign.ID+"/compliance-checks", `{
+		"channel":"tiktok",
+		"title":"Camera review",
+		"body":"Publi com link afiliado. Show the creator setup."
+	}`)
+	if len(complianceCheck.Findings) != 1 || complianceCheck.Findings[0].Code != "basic_check_passed" {
+		t.Fatalf("compliance check = %+v", complianceCheck)
+	}
+	campaigns := getJSON[[]campaignResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/campaigns")
+	if len(campaigns) != 1 || campaigns[0].ID != campaign.ID {
+		t.Fatalf("campaigns = %+v", campaigns)
+	}
 	offer := postJSON[offerResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/products/"+product.ID+"/offers", fmt.Sprintf(`{
 		"workspace_program_id":%q,
 		"title":"TikTok Shop offer",
@@ -69,6 +112,20 @@ func TestFirstSliceHTTPFlowWithPostgres(t *testing.T) {
 		"destination_url":"https://example.com/products/creator-camera",
 		"label":"TikTok bio"
 	}`, product.ID, offer.ID))
+	conversionImport := postJSON[conversionImportResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/conversion-imports", `{"source":"manual"}`)
+	conversionRow := postJSON[conversionImportRowResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/conversion-imports/"+conversionImport.ID+"/rows", fmt.Sprintf(`{
+		"product_id":%q,
+		"affiliate_link_id":%q,
+		"order_reference":"order-1001",
+		"gross_amount_cents":129900,
+		"commission_cents":12990,
+		"currency":"brl",
+		"raw_payload":{"source":"manual-fixture"}
+	}`, product.ID, link.ID))
+	conversionDetail := getJSON[conversionImportResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/conversion-imports/"+conversionImport.ID)
+	if conversionDetail.Source != "manual" || len(conversionDetail.Rows) != 1 || conversionDetail.Rows[0].ID != conversionRow.ID {
+		t.Fatalf("conversion import detail = %+v", conversionDetail)
+	}
 	shortLink := postJSON[shortLinkResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/links/"+link.ID+"/short-links", `{"slug":"creator-camera"}`)
 
 	redirectReq := httptest.NewRequest(http.MethodGet, "/r/"+shortLink.Slug, nil)
@@ -98,6 +155,16 @@ func TestFirstSliceHTTPFlowWithPostgres(t *testing.T) {
 	}
 	if clicksByLink.Items[0].GroupID != link.ID || clicksByLink.Items[0].Clicks != 1 {
 		t.Fatalf("link metric item = %+v", clicksByLink.Items[0])
+	}
+
+	overview := getJSON[analyticsOverviewResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/analytics/overview")
+	if overview.Clicks != 1 || overview.ImportedConversions != 1 || overview.CommissionCents != 12990 {
+		t.Fatalf("analytics overview = %+v", overview)
+	}
+
+	topProducts := getJSON[[]topProductResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/analytics/top-products")
+	if len(topProducts) != 1 || topProducts[0].ProductID != product.ID || topProducts[0].Clicks != 1 || topProducts[0].ImportedConversions != 1 {
+		t.Fatalf("top products = %+v", topProducts)
 	}
 }
 
@@ -174,6 +241,14 @@ func getJSON[T any](t *testing.T, client *testClient, path string) T {
 	return doJSON[T](t, client, req, http.StatusOK)
 }
 
+func patchJSON[T any](t *testing.T, client *testClient, path string, body string) T {
+	t.Helper()
+
+	req := httptest.NewRequest(http.MethodPatch, path, bytes.NewBufferString(body))
+	req.Header.Set("Content-Type", "application/json")
+	return doJSON[T](t, client, req, http.StatusOK)
+}
+
 func doJSON[T any](t *testing.T, client *testClient, req *http.Request, wantStatus int) T {
 	t.Helper()
 
@@ -212,11 +287,47 @@ type productResponse struct {
 	ID string `json:"id"`
 }
 
+type campaignResponse struct {
+	ID              string                   `json:"id"`
+	ProductID       string                   `json:"product_id"`
+	Status          string                   `json:"status"`
+	ChannelPackages []channelPackageResponse `json:"channel_packages"`
+}
+
+type channelPackageResponse struct {
+	ID string `json:"id"`
+}
+
+type publishingTaskResponse struct {
+	ID          string `json:"id"`
+	Status      string `json:"status"`
+	CompletedAt string `json:"completed_at"`
+}
+
+type complianceCheckResponse struct {
+	ID       string                      `json:"id"`
+	Findings []complianceFindingResponse `json:"findings"`
+}
+
+type complianceFindingResponse struct {
+	Code string `json:"code"`
+}
+
 type offerResponse struct {
 	ID string `json:"id"`
 }
 
 type linkResponse struct {
+	ID string `json:"id"`
+}
+
+type conversionImportResponse struct {
+	ID     string                        `json:"id"`
+	Source string                        `json:"source"`
+	Rows   []conversionImportRowResponse `json:"rows"`
+}
+
+type conversionImportRowResponse struct {
 	ID string `json:"id"`
 }
 
@@ -232,4 +343,16 @@ type clickMetricsResponse struct {
 type clickMetricItem struct {
 	GroupID string `json:"group_id"`
 	Clicks  int64  `json:"clicks"`
+}
+
+type analyticsOverviewResponse struct {
+	Clicks              int64 `json:"clicks"`
+	ImportedConversions int64 `json:"imported_conversions"`
+	CommissionCents     int64 `json:"commission_cents"`
+}
+
+type topProductResponse struct {
+	ProductID           string `json:"product_id"`
+	Clicks              int64  `json:"clicks"`
+	ImportedConversions int64  `json:"imported_conversions"`
 }

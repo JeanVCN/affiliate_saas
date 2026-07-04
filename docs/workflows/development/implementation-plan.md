@@ -46,15 +46,18 @@ Build the smallest vertical slice:
 4. Affiliate link registry. Implemented for destination links.
 5. Short-link redirect and click event. Implemented for `/r/{slug}`.
 6. Auth/session hardening. Implemented with signup, login, logout, me, Argon2id, session cookies, and workspace RBAC.
-7. Campaign draft generated manually first, AI later. Not started.
-8. Dashboard-ready query for clicks by link/product. Implemented for click metrics.
+7. Campaign draft generated manually first, AI later. Implemented for manual drafts and channel packages.
+8. Dashboard-ready queries. Implemented for click metrics, overview, and top products.
+9. Manual conversion import batches and rows. Implemented for API-backed manual imports.
+10. Compliance checklist data model and campaign check execution. Implemented for basic MVP rules.
+11. Manual publishing tasks. Implemented for campaign task creation, listing, scheduling, and completion.
 
 ## Phase D: AI And Imports
 
 - Add provider abstraction.
 - Add prompt templates for TikTok Shop/Shopee/Mercado Livre/Amazon playbooks.
-- Add CSV import contract for conversions/commissions.
-- Add compliance checklist data model.
+- Add CSV upload/parsing for conversions/commissions after manual import flow is stable.
+- Expand compliance rules and policy notes after the basic campaign checklist is stable.
 
 ## Phase E: Frontend Foundation
 
@@ -72,8 +75,8 @@ Stabilize the first backend slice before frontend or AI work:
 3. Verify the first slice end-to-end:
 
 ```text
-workspace -> marketplace program -> product -> offer -> affiliate link -> short redirect -> click event -> analytics query
+workspace -> marketplace program -> product -> campaign -> channel package -> compliance check -> publishing task -> offer -> affiliate link -> conversion import -> short redirect -> click event -> analytics query
 ```
 
-4. Keep AI generation, marketplace integrations, provider OAuth token storage, and frontend scaffold out until this backend slice is stable.
-5. Manual campaign draft endpoints are the next backend feature candidate before frontend work.
+4. Keep AI generation, marketplace integrations, provider OAuth token storage, and frontend scaffold out until this backend slice is committed.
+5. Next candidates after this backend checkpoint: CSV import parsing, richer compliance policy notes, or frontend foundation once approved.

@@ -18,7 +18,7 @@ Use this file when resuming the project in a new chat or with a fresh agent.
 
 Phase 0 is complete. Phase 1 foundational ADRs are accepted. Phase 2 MVP domain docs are complete. Phase 3 API/database baseline docs are complete. Phase 4 quality/security/local-dev docs are complete. Phase 5 AI/MCP/code-index docs are complete.
 
-The repository now contains documentation plus a modular Go/Gin backend. The first backend slice has repository-backed modules for auth/session, workspace setup, marketplace/program setup, products/offers, affiliate links, short-link redirects, click recording, and click analytics. Auth includes signup, login, logout, `me`, Argon2id password hashing, HttpOnly session cookies, workspace RBAC, and OAuth readiness tables without provider token storage. There is intentionally no frontend app or AI/product automation yet.
+The repository now contains documentation plus a modular Go/Gin backend. The first backend slice has repository-backed modules for auth/session, workspace setup, marketplace/program setup, products/offers, affiliate links, short-link redirects, click recording, click analytics, analytics overview/top products, manual campaign drafts with channel packages, manual publishing tasks, manual conversion import batches/rows, and basic campaign compliance checks. Auth includes signup, login, logout, `me`, Argon2id password hashing, HttpOnly session cookies, workspace RBAC, and OAuth readiness tables without provider token storage. There is intentionally no frontend app or AI/product automation yet.
 
 ## Product Direction
 
@@ -39,13 +39,11 @@ product -> affiliate link -> AI campaign -> channel package -> click tracking ->
 
 ## Where To Start
 
-Always load:
+Always load only:
 
 1. `AGENTS.md`
-2. `docs/INDEX.md`
-3. `docs/workflows/development/documentation-phases.md`
-4. `docs/workflows/development/phase-0-readiness.md`
-5. `docs/workflows/development/documentation-completion-checklist.md`
+
+Use `docs/INDEX.md` as the routing map when project context is needed. Load the smallest relevant docs for the task instead of opening every source listed below.
 
 For product context, load:
 
@@ -66,6 +64,7 @@ For architecture context, load:
 - `docs/decisions/adr/003-database-migration-tool.md`
 - `docs/decisions/adr/004-auth-session-strategy.md`
 - `docs/decisions/adr/005-short-link-tracking-strategy.md`
+- `docs/decisions/adr/006-token-efficient-assisted-development.md`
 
 ## Current Domain Docs
 
@@ -117,6 +116,16 @@ Continue with:
 signup -> session cookie -> workspace RBAC -> marketplace program -> product -> offer -> affiliate link -> short redirect -> click event -> analytics query
 ```
 
+The campaign/import slices now add:
+
+```text
+product -> manual campaign draft -> channel package -> campaign status update
+campaign -> manual publishing task -> task completion
+campaign/content -> basic compliance check -> findings
+product/link -> manual conversion import -> conversion import row
+click/import data -> analytics overview -> top products
+```
+
 Run:
 
 ```bash
@@ -135,10 +144,10 @@ AFFILIATE_TEST_DATABASE_URL='postgres://affiliate:affiliate@localhost:55432/affi
 
 ## Suggested Next Commit
 
-Commit the auth hardening slice as:
+Commit this closed backend checkpoint as:
 
 ```text
-feat: add secure auth sessions and workspace rbac
+feat: complete backend manual campaign workflow
 ```
 
 ## Validation For Phase 0

@@ -2,7 +2,7 @@
 title: Compliance Domain
 status: active
 owner: system-architect
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - ../../product/vision.md
@@ -51,7 +51,15 @@ It is a guardrail domain, not a copy generation domain.
 
 ## First Vertical Slice
 
-Start with a basic checklist attached to campaign drafts: affiliate disclosure present, no invented product claims, no prohibited automation, and no unsupported price/availability claims.
+Implemented first:
+
+- run a basic checklist for campaign content;
+- flag missing affiliate disclosure as a blocker;
+- flag unsupported absolute claims as blockers;
+- warn on price or availability claims that must be checked against product truth;
+- flag prohibited automation or artificial engagement references.
+
+This is an MVP guardrail, not legal approval.
 
 ## Risks
 

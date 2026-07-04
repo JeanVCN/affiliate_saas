@@ -42,7 +42,7 @@ Precedence when sources conflict:
 - Prefer one bounded vertical slice per turn, then checkpoint the next step.
 - For multi-file work, identify the small file set first, edit, verify, and summarize evidence.
 - Favor domain modules with low file fan-out. Split files by responsibility when they approach 400 lines or mix concerns; do not create layers only for ceremony.
-- Use a verification budget: run focused checks while implementing; save full test suites, broad diffs, and detailed Git status for checkpoints and pre-commit validation.
+- Use a verification budget: during normal implementation run only focused checks when useful. Run full test suites, broad diffs, and detailed Git status only when the user asks to validate, review, close a stage, commit, or says it is the last step before commit.
 - Keep route handlers as named functions or methods, not inline lambdas.
 
 ## Stack Preference

@@ -31,7 +31,7 @@ Use a token-efficient modular monolith:
 - Keep handler/service/repository separation as the default shape for real behavior, but split by responsibility when size or mixed concerns justify it.
 - Keep Go files at or below 400 lines unless there is an explicit split plan.
 - Route registration maps URLs to named handler methods or functions; business logic does not live in inline lambdas.
-- Use a verification budget: run focused checks while implementing, then full validation at stage completion or before commit.
+- Use a verification budget: run focused checks while implementing. Run full validation only when the user asks to validate, review, close a stage, commit, or says it is the last step before commit.
 - Avoid repeated broad `git diff`/`git status` output during active implementation; use targeted Git inspection unless a checkpoint, review, or commit is being prepared.
 - End meaningful changes with focused verification evidence.
 
@@ -67,7 +67,7 @@ Negative:
 - Architecture changes update ADRs instead of expanding always-on instructions.
 - Backend changes do not require touching many files only to satisfy ceremony.
 - During implementation, agents use package/file-scoped checks when sufficient.
-- At checkpoints and before commits, agents run the relevant complete gate and summarize evidence.
+- At user-declared checkpoints and before commits, agents run the relevant complete gate and summarize evidence.
 - No regular Go source file exceeds 400 lines without an intentional split plan.
 
 ## Research Basis

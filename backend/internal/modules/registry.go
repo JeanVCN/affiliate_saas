@@ -3,6 +3,8 @@ package modules
 import (
 	"github.com/JeanVCN/affiliate_saas/backend/internal/modules/affiliate"
 	"github.com/JeanVCN/affiliate_saas/backend/internal/modules/analytics"
+	"github.com/JeanVCN/affiliate_saas/backend/internal/modules/campaign"
+	"github.com/JeanVCN/affiliate_saas/backend/internal/modules/compliance"
 	"github.com/JeanVCN/affiliate_saas/backend/internal/modules/identity"
 	"github.com/JeanVCN/affiliate_saas/backend/internal/modules/linktracking"
 	"github.com/JeanVCN/affiliate_saas/backend/internal/modules/marketplace"
@@ -19,6 +21,8 @@ type Dependencies struct {
 	Affiliate    *affiliate.Service
 	LinkTracking *linktracking.Service
 	Analytics    *analytics.Service
+	Campaign     *campaign.Service
+	Compliance   *compliance.Service
 }
 
 func (deps Dependencies) HasServices() bool {
@@ -28,7 +32,9 @@ func (deps Dependencies) HasServices() bool {
 		deps.Product != nil ||
 		deps.Affiliate != nil ||
 		deps.LinkTracking != nil ||
-		deps.Analytics != nil
+		deps.Analytics != nil ||
+		deps.Campaign != nil ||
+		deps.Compliance != nil
 }
 
 func RegisterRoutes(router *gin.Engine, deps Dependencies, appEnv string) {
@@ -59,6 +65,12 @@ func RegisterRoutes(router *gin.Engine, deps Dependencies, appEnv string) {
 		if deps.Analytics != nil {
 			analytics.RegisterWorkspaceRoutes(workspace, deps.Analytics)
 		}
+		if deps.Campaign != nil {
+			campaign.RegisterWorkspaceRoutes(workspace, deps.Campaign)
+		}
+		if deps.Compliance != nil {
+			compliance.RegisterWorkspaceRoutes(workspace, deps.Compliance)
+		}
 	}
 	if deps.Marketplace != nil {
 		protected := api.Group("")
@@ -79,6 +91,12 @@ func RegisterRoutes(router *gin.Engine, deps Dependencies, appEnv string) {
 		}
 		if deps.Analytics != nil {
 			analytics.RegisterRoutes(api, deps.Analytics)
+		}
+		if deps.Campaign != nil {
+			campaign.RegisterRoutes(api, deps.Campaign)
+		}
+		if deps.Compliance != nil {
+			compliance.RegisterRoutes(api, deps.Compliance)
 		}
 	}
 	if deps.LinkTracking != nil {
@@ -107,6 +125,12 @@ func withPostgresDefaults(deps Dependencies) Dependencies {
 	}
 	if deps.Analytics == nil {
 		deps.Analytics = analytics.NewService(analytics.NewPostgresRepository(deps.DB))
+	}
+	if deps.Campaign == nil {
+		deps.Campaign = campaign.NewService(campaign.NewPostgresRepository(deps.DB))
+	}
+	if deps.Compliance == nil {
+		deps.Compliance = compliance.NewService(compliance.NewPostgresRepository(deps.DB))
 	}
 	return deps
 }
