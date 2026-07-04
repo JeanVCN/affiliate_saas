@@ -22,6 +22,13 @@ func RegisterRoutes(api gin.IRouter, service *Service) {
 	api.GET("/workspaces/:workspace_id/links/:link_id", handler.GetLink)
 }
 
+func RegisterWorkspaceRoutes(workspace gin.IRouter, service *Service) {
+	handler := NewHandler(service)
+	workspace.GET("/links", handler.ListLinks)
+	workspace.POST("/links", handler.CreateLink)
+	workspace.GET("/links/:link_id", handler.GetLink)
+}
+
 func (handler *Handler) ListLinks(c *gin.Context) {
 	items, err := handler.service.ListLinks(c.Request.Context(), c.Param("workspace_id"))
 	common.Respond(c, items, err, http.StatusOK)

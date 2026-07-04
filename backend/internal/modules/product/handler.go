@@ -23,6 +23,14 @@ func RegisterRoutes(api gin.IRouter, service *Service) {
 	api.POST("/workspaces/:workspace_id/products/:product_id/offers", handler.CreateOffer)
 }
 
+func RegisterWorkspaceRoutes(workspace gin.IRouter, service *Service) {
+	handler := NewHandler(service)
+	workspace.GET("/products", handler.ListProducts)
+	workspace.POST("/products", handler.CreateProduct)
+	workspace.GET("/products/:product_id", handler.GetProduct)
+	workspace.POST("/products/:product_id/offers", handler.CreateOffer)
+}
+
 func (handler *Handler) ListProducts(c *gin.Context) {
 	items, err := handler.service.ListProducts(c.Request.Context(), c.Param("workspace_id"))
 	common.Respond(c, items, err, http.StatusOK)

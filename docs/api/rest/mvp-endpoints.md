@@ -2,7 +2,7 @@
 title: MVP REST Endpoints
 status: active
 owner: system-architect
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - ../README.md
@@ -28,6 +28,15 @@ This document lists the initial endpoint contract inventory. It is not a full Op
 | `POST` | `/api/v1/auth/login` | Identity | Create session for an existing user. |
 | `POST` | `/api/v1/auth/logout` | Identity | Revoke current session. |
 | `GET` | `/api/v1/auth/me` | Identity | Return current user and workspace memberships. |
+| `GET` | `/api/v1/auth/oauth/{provider}/start` | Identity | OAuth boundary endpoint; returns unavailable until provider configuration is approved. |
+
+Auth rules:
+
+- `signup`, `login`, public redirect `/r/{slug}`, and OAuth start are public.
+- `logout` and `me` require the session cookie.
+- Workspace-scoped routes require an authenticated user with active workspace membership.
+- Passwords are hashed with Argon2id.
+- Session cookies are `HttpOnly`, `SameSite=Lax`, and `Secure` outside local/test environments.
 
 ## Workspaces
 

@@ -17,6 +17,7 @@ This log tracks accepted architecture decisions for Affiliate SaaS. Accepted ADR
 | [ADR-003](adr/003-database-migration-tool.md) | accepted | 2026-07-03 | Use SQL-first migrations managed by `golang-migrate/migrate`. |
 | [ADR-004](adr/004-auth-session-strategy.md) | accepted | 2026-07-03 | Use first-party email/password auth with secure cookie sessions for the MVP. |
 | [ADR-005](adr/005-short-link-tracking-strategy.md) | accepted | 2026-07-03 | Use first-party short links and click events handled by the Go API. |
+| [ADR-006](adr/006-token-efficient-assisted-development.md) | accepted | 2026-07-04 | Use a token-efficient modular monolith with minimal always-on context and domain-scoped file fan-out. |
 
 ## Status Meanings
 

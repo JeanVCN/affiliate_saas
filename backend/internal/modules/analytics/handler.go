@@ -20,6 +20,11 @@ func RegisterRoutes(api gin.IRouter, service *Service) {
 	api.GET("/workspaces/:workspace_id/analytics/clicks", handler.ClickMetrics)
 }
 
+func RegisterWorkspaceRoutes(workspace gin.IRouter, service *Service) {
+	handler := NewHandler(service)
+	workspace.GET("/analytics/clicks", handler.ClickMetrics)
+}
+
 func (handler *Handler) ClickMetrics(c *gin.Context) {
 	groupBy := c.DefaultQuery("group_by", "product")
 	items, err := handler.service.ClickMetrics(c.Request.Context(), c.Param("workspace_id"), groupBy)

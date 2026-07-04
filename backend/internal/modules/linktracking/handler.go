@@ -25,6 +25,11 @@ func RegisterRoutes(api gin.IRouter, service *Service) {
 	api.POST("/workspaces/:workspace_id/links/:link_id/short-links", handler.CreateShortLink)
 }
 
+func RegisterWorkspaceRoutes(workspace gin.IRouter, service *Service) {
+	handler := NewHandler(service)
+	workspace.POST("/links/:link_id/short-links", handler.CreateShortLink)
+}
+
 func RegisterPublicRoutes(router gin.IRouter, service *Service) {
 	handler := NewHandler(service)
 	router.GET("/r/:slug", handler.Redirect)

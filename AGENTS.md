@@ -1,6 +1,6 @@
 # AGENTS.md
 
-This file is the always-on operating guide for AI agents working in this repository. Keep it short. Put detailed process, architecture, and domain knowledge under `docs/` and retrieve it on demand.
+This file is the always-on operating guide for AI agents working in this repository. Keep it short; load detailed docs only when the task needs them.
 
 ## Project
 
@@ -15,7 +15,7 @@ Core MVP thesis:
 
 ## Source Of Truth
 
-Read `docs/INDEX.md` first when looking for project context.
+Use `docs/INDEX.md` as the routing map when project context is needed. Do not open broad docs by default for narrow code or command tasks.
 
 Precedence when sources conflict:
 
@@ -35,6 +35,15 @@ Precedence when sources conflict:
 - Update docs when changing architecture, domain behavior, API contracts, database schema, prompts, deployment, or workflows.
 - Record architecturally significant decisions as ADRs.
 - End work with verification evidence when possible.
+
+## Context Budget
+
+- Keep always-on context minimal; durable detail belongs under `docs/` and is loaded on demand.
+- Prefer one bounded vertical slice per turn, then checkpoint the next step.
+- For multi-file work, identify the small file set first, edit, verify, and summarize evidence.
+- Favor domain modules with low file fan-out. Split files by responsibility when they approach 400 lines or mix concerns; do not create layers only for ceremony.
+- Use a verification budget: run focused checks while implementing; save full test suites, broad diffs, and detailed Git status for checkpoints and pre-commit validation.
+- Keep route handlers as named functions or methods, not inline lambdas.
 
 ## Stack Preference
 
@@ -58,4 +67,3 @@ Precedence when sources conflict:
 - Do not duplicate source-of-truth content across docs; link to it.
 - Add `status`, `owner`, and `last_verified_at` frontmatter to durable docs when practical.
 - Archive stale docs instead of silently deleting context.
-

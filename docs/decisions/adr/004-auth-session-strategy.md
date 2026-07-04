@@ -2,7 +2,7 @@
 title: ADR-004 Auth Session Strategy
 status: active
 owner: system-architect
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 ---
 
@@ -20,15 +20,16 @@ The frontend is expected to be Next.js and the backend Go API will own applicati
 
 ## Decision
 
-Use first-party email/password authentication with secure cookie sessions for the MVP.
+Use first-party email/password authentication with secure cookie sessions for the MVP. Keep OAuth as an explicit extension boundary, with state and identity tables prepared, but do not enable provider login until a provider is configured and reviewed.
 
 Guidelines:
 
 - Store users, password hashes, sessions, and workspace memberships in PostgreSQL.
-- Hash passwords with a memory-hard algorithm such as Argon2id.
+- Hash passwords with Argon2id.
 - Set session cookies as `HttpOnly`, `Secure` in non-local environments, and `SameSite=Lax` by default.
 - Authorize every protected operation through workspace membership and role checks.
-- Keep OAuth, magic links, SSO, and API tokens out of the MVP unless a concrete customer requirement appears.
+- Keep marketplace OAuth, magic links, SSO, and API tokens out of the first product slice unless a concrete customer requirement appears.
+- Store OAuth states and provider identities without storing provider access/refresh tokens until an integration-specific token policy is accepted.
 - Design session storage so sessions can be revoked server-side.
 
 ## Alternatives Considered

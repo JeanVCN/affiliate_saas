@@ -31,28 +31,58 @@ func (deps Dependencies) HasServices() bool {
 		deps.Analytics != nil
 }
 
-func RegisterRoutes(router *gin.Engine, deps Dependencies) {
+func RegisterRoutes(router *gin.Engine, deps Dependencies, appEnv string) {
 	deps = withPostgresDefaults(deps)
 
 	api := router.Group("/api/v1")
 	if deps.Identity != nil {
-		identity.RegisterRoutes(api, deps.Identity)
+		protected := api.Group("")
+		protected.Use(identity.AuthMiddleware(deps.Identity))
+		workspace := api.Group("/workspaces/:workspace_id")
+		workspace.Use(identity.AuthMiddleware(deps.Identity), identity.WorkspaceRoleMiddleware(deps.Identity, identity.RoleMember))
+
+		identity.RegisterAuthRoutes(api, protected, deps.Identity, appEnv)
+		identity.RegisterRoutes(protected, deps.Identity)
+
+		if deps.Marketplace != nil {
+			marketplace.RegisterWorkspaceRoutes(workspace, deps.Marketplace)
+		}
+		if deps.Product != nil {
+			product.RegisterWorkspaceRoutes(workspace, deps.Product)
+		}
+		if deps.Affiliate != nil {
+			affiliate.RegisterWorkspaceRoutes(workspace, deps.Affiliate)
+		}
+		if deps.LinkTracking != nil {
+			linktracking.RegisterWorkspaceRoutes(workspace, deps.LinkTracking)
+		}
+		if deps.Analytics != nil {
+			analytics.RegisterWorkspaceRoutes(workspace, deps.Analytics)
+		}
 	}
 	if deps.Marketplace != nil {
-		marketplace.RegisterRoutes(api, deps.Marketplace)
+		protected := api.Group("")
+		if deps.Identity != nil {
+			protected.Use(identity.AuthMiddleware(deps.Identity))
+		}
+		marketplace.RegisterRoutes(protected, deps.Marketplace)
 	}
-	if deps.Product != nil {
-		product.RegisterRoutes(api, deps.Product)
-	}
-	if deps.Affiliate != nil {
-		affiliate.RegisterRoutes(api, deps.Affiliate)
+	if deps.Identity == nil {
+		if deps.Product != nil {
+			product.RegisterRoutes(api, deps.Product)
+		}
+		if deps.Affiliate != nil {
+			affiliate.RegisterRoutes(api, deps.Affiliate)
+		}
+		if deps.LinkTracking != nil {
+			linktracking.RegisterRoutes(api, deps.LinkTracking)
+		}
+		if deps.Analytics != nil {
+			analytics.RegisterRoutes(api, deps.Analytics)
+		}
 	}
 	if deps.LinkTracking != nil {
-		linktracking.RegisterRoutes(api, deps.LinkTracking)
 		linktracking.RegisterPublicRoutes(router, deps.LinkTracking)
-	}
-	if deps.Analytics != nil {
-		analytics.RegisterRoutes(api, deps.Analytics)
 	}
 }
 

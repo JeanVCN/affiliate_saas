@@ -18,8 +18,12 @@ func NewHandler(service *Service) *Handler {
 func RegisterRoutes(api gin.IRouter, service *Service) {
 	handler := NewHandler(service)
 	api.GET("/marketplaces", handler.ListMarketplaces)
-	api.GET("/workspaces/:workspace_id/programs", handler.ListWorkspacePrograms)
-	api.POST("/workspaces/:workspace_id/programs", handler.EnableWorkspaceProgram)
+}
+
+func RegisterWorkspaceRoutes(workspace gin.IRouter, service *Service) {
+	handler := NewHandler(service)
+	workspace.GET("/programs", handler.ListWorkspacePrograms)
+	workspace.POST("/programs", handler.EnableWorkspaceProgram)
 }
 
 func (handler *Handler) ListMarketplaces(c *gin.Context) {

@@ -36,7 +36,7 @@ func NewRouter(deps Dependencies) *gin.Engine {
 		moduleDeps.DB = deps.DB
 	}
 	if moduleDeps.HasServices() {
-		modules.RegisterRoutes(router, moduleDeps)
+		modules.RegisterRoutes(router, moduleDeps, deps.AppEnv)
 	}
 
 	return router

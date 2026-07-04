@@ -12,7 +12,7 @@ source_of_truth: true
 
 Start as a modular monolith with clear domain boundaries and async workers. Do not start with microservices. Extract services only when operational load, team ownership, or scaling requirements justify it.
 
-Backend domains live under `backend/internal/modules/*`. Each active module should grow around `handler.go`, `service.go`, `repository.go`, and `models.go` so the first implementation can evolve into the long-term product architecture instead of being a throwaway MVP layer. Route registration should point to named handler methods, and Go files should stay at or below 400 lines; split large handlers, services, or repositories by responsibility before they become catch-all files.
+Backend domains live under `backend/internal/modules/*`. Modules are domain-first, not ceremony-first: use handlers, services, repositories, and models when they carry real behavior, but avoid creating extra files only to satisfy symmetry. Route registration should point to named handler methods or functions, and Go files should stay at or below 400 lines; split large handlers, services, or repositories by responsibility before they become catch-all files.
 
 ## Preferred Stack
 
@@ -30,6 +30,7 @@ Backend domains live under `backend/internal/modules/*`. Each active module shou
 - Database migration tool: `docs/decisions/adr/003-database-migration-tool.md`
 - Auth/session strategy: `docs/decisions/adr/004-auth-session-strategy.md`
 - Short-link tracking strategy: `docs/decisions/adr/005-short-link-tracking-strategy.md`
+- Token-efficient assisted development: `docs/decisions/adr/006-token-efficient-assisted-development.md`
 
 ## Major Modules
 

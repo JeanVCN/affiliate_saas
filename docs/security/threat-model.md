@@ -2,7 +2,7 @@
 title: Threat Model
 status: active
 owner: security-engineer
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - secrets-policy.md
@@ -41,7 +41,8 @@ This threat model covers the MVP surface before implementation.
 | Open redirect abuse | Short links redirect to malicious destinations. | Validate URL scheme/host rules and allow pausing/archiving links. |
 | Click fraud or bot traffic | Analytics becomes misleading. | Record enough metadata for later bot heuristics; label metrics honestly. |
 | Secret exposure | Credentials leak from Git/logs. | Secrets policy, `.env.example`, no real secrets in docs or repo. |
-| Session theft | Account takeover. | HttpOnly/Secure/SameSite cookies, server-side revocation, password hashing. |
+| Session theft | Account takeover. | HttpOnly/Secure/SameSite cookies, opaque session tokens stored hashed server-side, server-side revocation, password hashing. |
+| Weak password storage | Offline cracking after database leak. | Argon2id hashes with per-password salts; hashes never leave the backend. |
 | CSV/import poisoning | Malformed imports corrupt analytics. | Validate file/row shape, preserve raw rows, mark unmatched rows clearly. |
 | AI claim fabrication | Risky commercial copy. | Compliance checks, product-grounded prompts, user review before publishing. |
 | Marketplace policy drift | Workflows violate platform rules. | Dated policy notes and no scraping/browser automation in MVP. |
@@ -50,7 +51,7 @@ This threat model covers the MVP surface before implementation.
 
 - No automated social engagement.
 - No scraping marketplaces or social networks.
-- No marketplace OAuth storage until integrations are approved.
+- No marketplace OAuth token storage until integrations are approved; only OAuth identity/state readiness exists.
 - No public API tokens.
 - No automated publishing through unofficial routes.
 

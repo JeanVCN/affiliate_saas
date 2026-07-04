@@ -18,7 +18,7 @@ Use this file when resuming the project in a new chat or with a fresh agent.
 
 Phase 0 is complete. Phase 1 foundational ADRs are accepted. Phase 2 MVP domain docs are complete. Phase 3 API/database baseline docs are complete. Phase 4 quality/security/local-dev docs are complete. Phase 5 AI/MCP/code-index docs are complete.
 
-The repository now contains documentation plus a modular Go/Gin backend. The first backend slice has repository-backed modules for workspace setup, marketplace/program setup, products/offers, affiliate links, short-link redirects, click recording, and click analytics. There is intentionally no frontend app or AI/product automation yet.
+The repository now contains documentation plus a modular Go/Gin backend. The first backend slice has repository-backed modules for auth/session, workspace setup, marketplace/program setup, products/offers, affiliate links, short-link redirects, click recording, and click analytics. Auth includes signup, login, logout, `me`, Argon2id password hashing, HttpOnly session cookies, workspace RBAC, and OAuth readiness tables without provider token storage. There is intentionally no frontend app or AI/product automation yet.
 
 ## Product Direction
 
@@ -107,14 +107,14 @@ For architecture context, load:
 
 ## Next Phase
 
-The next phase is backend stabilization for the first product slice.
+The next phase is continuing backend product features after auth hardening.
 
 Continue with:
 
-- PostgreSQL-backed validation for the first vertical slice:
+- PostgreSQL-backed validation for the authenticated first vertical slice:
 
 ```text
-workspace -> marketplace program -> product -> offer -> affiliate link -> short redirect -> click event -> analytics query
+signup -> session cookie -> workspace RBAC -> marketplace program -> product -> offer -> affiliate link -> short redirect -> click event -> analytics query
 ```
 
 Run:
@@ -122,23 +122,23 @@ Run:
 ```bash
 cd backend
 GOCACHE=/tmp/affiliate-saas-go-cache go test ./...
-AFFILIATE_TEST_DATABASE_URL='postgres://user:password@localhost:5432/affiliate_saas_test?sslmode=disable' GOCACHE=/tmp/affiliate-saas-go-cache go test ./tests/integration
+AFFILIATE_TEST_DATABASE_URL='postgres://affiliate:affiliate@localhost:55432/affiliate_saas?sslmode=disable' GOCACHE=/tmp/affiliate-saas-go-cache go test ./tests/integration
 ```
 
 ## Keep Out Of First Slice
 
 - AI generation.
 - Marketplace API integrations.
-- OAuth marketplace connections.
+- OAuth provider token storage.
 - Browser automation.
 - Frontend scaffold unless explicitly requested.
 
 ## Suggested Next Commit
 
-Commit the modular backend slice as:
+Commit the auth hardening slice as:
 
 ```text
-refactor: organize backend into domain modules
+feat: add secure auth sessions and workspace rbac
 ```
 
 ## Validation For Phase 0

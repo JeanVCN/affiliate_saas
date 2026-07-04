@@ -2,7 +2,7 @@
 title: Secrets Policy
 status: active
 owner: security-engineer
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - ../decisions/adr/004-auth-session-strategy.md
@@ -16,7 +16,7 @@ Affiliate SaaS must never commit secrets, credentials, customer data, marketplac
 ## Secret Types
 
 - Database URLs and passwords.
-- Cookie/session signing keys.
+- Session cookies and server-side session tokens.
 - Marketplace credentials and OAuth tokens.
 - AI provider API keys.
 - S3-compatible storage keys.
@@ -57,9 +57,9 @@ Rotate immediately if a secret is exposed in:
 
 ## Application Requirements
 
-- Session cookies must be signed or backed by unguessable session IDs.
+- Session cookies must be backed by unguessable session IDs; the database stores only session token hashes.
 - Password hashes use Argon2id or another approved memory-hard algorithm.
-- Marketplace tokens are not part of MVP storage unless an official integration is approved.
+- Marketplace/OAuth provider tokens are not part of MVP storage unless an official integration is approved.
 - AI provider keys remain server-side only.
 
 ## Agent Rules

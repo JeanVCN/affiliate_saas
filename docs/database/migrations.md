@@ -2,7 +2,7 @@
 title: Database Migrations
 status: active
 owner: database-engineer
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - ../decisions/adr/003-database-migration-tool.md
@@ -30,6 +30,10 @@ Use ordered filenames:
 000001_create_identity.down.sql
 000002_create_marketplace_product_links.up.sql
 000002_create_marketplace_product_links.down.sql
+000003_create_campaign_compliance_imports.up.sql
+000003_create_campaign_compliance_imports.down.sql
+000004_create_oauth_identities.up.sql
+000004_create_oauth_identities.down.sql
 ```
 
 ## Rules
@@ -59,6 +63,7 @@ Split initial migrations by dependency order:
 3. Affiliate and tracking: affiliate links, link variants, short links, click events.
 4. Campaign and compliance: campaigns, channel packages, publishing tasks, compliance checks/findings.
 5. Imports: conversion imports and rows.
+6. OAuth readiness: OAuth identities and short-lived OAuth states.
 
 ## Verification
 

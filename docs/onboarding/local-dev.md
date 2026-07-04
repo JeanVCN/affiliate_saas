@@ -66,7 +66,7 @@ GOCACHE=/tmp/affiliate-saas-go-cache go test ./tests/integration
 The integration test creates an isolated PostgreSQL schema, applies all `backend/migrations/*.up.sql` files, and exercises the first product slice through HTTP:
 
 ```text
-workspace -> marketplace program -> product -> offer -> affiliate link -> short redirect -> click event -> analytics query
+signup -> session cookie -> workspace RBAC -> marketplace program -> product -> offer -> affiliate link -> short redirect -> click event -> analytics query
 ```
 
 Do not point `AFFILIATE_TEST_DATABASE_URL` at a production or shared database.

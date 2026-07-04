@@ -2,7 +2,7 @@
 title: Database Entity Catalog
 status: active
 owner: system-architect
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - schema-overview.md
@@ -21,6 +21,8 @@ This catalog names the initial PostgreSQL entities before migrations are impleme
 | Workspace | `workspaces` | Tenant boundary for business data. |
 | Membership | `workspace_memberships` | User access to workspace. |
 | Session | `sessions` | Server-side cookie session record. |
+| OAuth Identity | `oauth_identities` | Optional external identity linked to a user. |
+| OAuth State | `oauth_states` | Short-lived OAuth state for provider authorization flow protection. |
 
 ## Marketplace
 

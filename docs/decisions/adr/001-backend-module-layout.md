@@ -18,7 +18,7 @@ Affiliate SaaS needs a backend that can support identity, marketplace programs, 
 
 The product roadmap favors a fast, inspectable first release that can run in Docker with PostgreSQL and, later, Redis Streams. The architecture overview already points to a modular monolith, so the repository layout should make module boundaries explicit while keeping local development and deployment simple.
 
-The codebase should not be shaped as throwaway MVP scaffolding. It should start with an architecture that can evolve naturally as domains gain behavior, without requiring a later folder-level rewrite just to introduce handlers, services, and repositories.
+The codebase should not be shaped as throwaway MVP scaffolding. It should start with an architecture that can evolve naturally as domains gain behavior, without requiring a later folder-level rewrite just to introduce handlers, services, and repositories. It should also avoid unnecessary file fan-out because AI-assisted development benefits from smaller context windows and focused vertical slices.
 
 ## Decision
 
@@ -62,6 +62,7 @@ Boundary rules:
 - `cmd/api` and `cmd/worker` are thin composition roots.
 - `internal/http` owns process-level HTTP setup, middleware, health checks, and route composition.
 - `internal/modules/*` owns domain HTTP handlers, services, repositories, models, and application behavior.
+- Modules are domain-first, not ceremony-first. Add files when they clarify responsibility or reduce size/mixed concerns; do not require every small module to have the same file set before it has real behavior.
 - `handler.go` is the only module layer that should import Gin or HTTP request/response types.
 - Module handlers should be methods on a `Handler` type. `RegisterRoutes` should only instantiate the handler and map routes to named methods; it should not contain inline route lambdas except for trivial temporary experiments.
 - `service.go` owns use-case orchestration, validation, and cross-repository coordination inside the module.
@@ -70,6 +71,7 @@ Boundary rules:
 - Cross-module calls should go through explicit service interfaces or application use cases, not shared global state or direct table coupling in handlers.
 - Database migrations live in `backend/migrations`.
 - Keep Go files at or below 400 lines. When a module's `repository.go`, `service.go`, or `handler.go` approaches that limit or starts mixing unrelated responsibilities, split it by responsibility, for example `product_repository.go`, `offer_repository.go`, `click_repository.go`, or `dashboard_service.go`.
+- Prefer vertical, domain-scoped changes over broad layer-by-layer edits when both are reasonable.
 
 ## Alternatives Considered
 
@@ -91,7 +93,7 @@ Positive:
 Negative:
 
 - Requires discipline to avoid modules reaching across boundaries casually.
-- Some handler/service/repository separation may feel verbose while modules are still small.
+- Some handler/service/repository separation may feel verbose while modules are still small; ADR-006 allows leaner file sets until behavior justifies the split.
 - Service extraction later will still require explicit data and contract work.
 
 ## Verification
@@ -102,12 +104,14 @@ Negative:
 - No regular Go source file exceeds 400 lines without an intentional split plan.
 - `cmd/api` and `cmd/worker` remain composition entrypoints, not business logic containers.
 - Domain docs map cleanly to `internal/modules/*`.
+- Small modules are allowed to remain lean when additional files would only add ceremony.
 
 ## Links
 
 - Related docs:
   - `docs/architecture/system-overview.md`
   - `docs/architecture/context-map.md`
+  - `docs/decisions/adr/006-token-efficient-assisted-development.md`
   - `docs/product/roadmap.md`
 - Related issues:
   - None yet.

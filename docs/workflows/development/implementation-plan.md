@@ -45,8 +45,9 @@ Build the smallest vertical slice:
 3. Product registry. Implemented for products and offers.
 4. Affiliate link registry. Implemented for destination links.
 5. Short-link redirect and click event. Implemented for `/r/{slug}`.
-6. Campaign draft generated manually first, AI later. Not started.
-7. Dashboard-ready query for clicks by link/product. Implemented for click metrics.
+6. Auth/session hardening. Implemented with signup, login, logout, me, Argon2id, session cookies, and workspace RBAC.
+7. Campaign draft generated manually first, AI later. Not started.
+8. Dashboard-ready query for clicks by link/product. Implemented for click metrics.
 
 ## Phase D: AI And Imports
 
@@ -74,5 +75,5 @@ Stabilize the first backend slice before frontend or AI work:
 workspace -> marketplace program -> product -> offer -> affiliate link -> short redirect -> click event -> analytics query
 ```
 
-4. Keep AI generation, marketplace integrations, OAuth, and frontend scaffold out until this backend slice is stable.
-5. After this slice is proven against PostgreSQL, choose between session/auth hardening and manual campaign draft endpoints.
+4. Keep AI generation, marketplace integrations, provider OAuth token storage, and frontend scaffold out until this backend slice is stable.
+5. Manual campaign draft endpoints are the next backend feature candidate before frontend work.

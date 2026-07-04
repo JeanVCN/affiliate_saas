@@ -13,6 +13,21 @@ depends_on:
 
 Quality gates define the minimum checks before merging or presenting work.
 
+## Verification Budget
+
+During active implementation, prefer focused checks that match the files or package being changed. Avoid repeating full test suites, broad `git diff`, or detailed `git status` output after every small edit.
+
+Run complete gates when a stage is ready for review, before committing, before presenting work as complete, or earlier when the change is high risk.
+
+High-risk changes include auth, RBAC, sessions, migrations, billing, data deletion, external integrations, secrets handling, and tracking/privacy behavior.
+
+Git usage:
+
+- use targeted diffs while implementing, such as a specific file or package;
+- use broad `git status` and full diffs at checkpoints, review, or commit time;
+- never include secrets, OAuth tokens, customer data, or private exports in diffs or commits;
+- do not commit until the relevant gate has passed or any skipped check is explicitly called out.
+
 ## Documentation-Only Gate
 
 Run:

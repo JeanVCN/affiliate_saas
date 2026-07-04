@@ -16,7 +16,7 @@ import (
 )
 
 func TestCreateWorkspaceEndpoint(t *testing.T) {
-	repo := &fakeIdentityRepository{}
+	repo := &fakeIdentityRepository{auth: testAuth()}
 	router := NewRouter(Dependencies{
 		AppEnv: "test",
 		Modules: modules.Dependencies{
@@ -26,6 +26,7 @@ func TestCreateWorkspaceEndpoint(t *testing.T) {
 
 	req := httptest.NewRequest(http.MethodPost, "/api/v1/workspaces", bytes.NewBufferString(`{"name":"Creator Lab"}`))
 	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(&http.Cookie{Name: identity.SessionCookieName, Value: "test-session"})
 	rec := httptest.NewRecorder()
 
 	router.ServeHTTP(rec, req)
@@ -35,6 +36,25 @@ func TestCreateWorkspaceEndpoint(t *testing.T) {
 	}
 	if repo.createdWorkspace.Slug != "creator-lab" {
 		t.Fatalf("slug = %q, want creator-lab", repo.createdWorkspace.Slug)
+	}
+}
+
+func TestProtectedWorkspaceEndpointRequiresSession(t *testing.T) {
+	router := NewRouter(Dependencies{
+		AppEnv: "test",
+		Modules: modules.Dependencies{
+			Identity: identity.NewService(&fakeIdentityRepository{auth: testAuth()}),
+		},
+	})
+
+	req := httptest.NewRequest(http.MethodPost, "/api/v1/workspaces", bytes.NewBufferString(`{"name":"Creator Lab"}`))
+	req.Header.Set("Content-Type", "application/json")
+	rec := httptest.NewRecorder()
+
+	router.ServeHTTP(rec, req)
+
+	if rec.Code != http.StatusUnauthorized {
+		t.Fatalf("status = %d, want %d, body = %s", rec.Code, http.StatusUnauthorized, rec.Body.String())
 	}
 }
 
@@ -99,6 +119,7 @@ func TestRedirectRecordsClickAndContinues(t *testing.T) {
 
 type fakeIdentityRepository struct {
 	createdWorkspace identity.CreateWorkspaceInput
+	auth             identity.AuthenticatedUser
 }
 
 func (repo *fakeIdentityRepository) ListWorkspaces(context.Context) ([]identity.Workspace, error) {
@@ -117,8 +138,70 @@ func (repo *fakeIdentityRepository) CreateWorkspace(_ context.Context, input ide
 	}, nil
 }
 
+func (repo *fakeIdentityRepository) CreateWorkspaceForUser(_ context.Context, userID string, input identity.CreateWorkspaceInput, role string) (identity.Workspace, identity.Membership, error) {
+	workspace, err := repo.CreateWorkspace(context.Background(), input)
+	if err != nil {
+		return identity.Workspace{}, identity.Membership{}, err
+	}
+	return workspace, identity.Membership{ID: "wmb_2", WorkspaceID: workspace.ID, UserID: userID, Role: role, Status: "active"}, nil
+}
+
 func (repo *fakeIdentityRepository) GetWorkspace(context.Context, string) (identity.Workspace, error) {
 	return identity.Workspace{ID: "wks_1", Name: "Creator Lab", Slug: "creator-lab", Status: "active"}, nil
+}
+
+func (repo *fakeIdentityRepository) CreateUserWithWorkspace(context.Context, identity.SignupInput, string) (identity.User, identity.Workspace, identity.Membership, error) {
+	return identity.User{}, identity.Workspace{}, identity.Membership{}, nil
+}
+
+func (repo *fakeIdentityRepository) GetUserByEmail(context.Context, string) (identity.User, string, error) {
+	return identity.User{}, "", nil
+}
+
+func (repo *fakeIdentityRepository) GetUserBySession(context.Context, string) (identity.User, identity.Session, error) {
+	return repo.auth.User, identity.Session{ID: "session_hash", UserID: repo.auth.User.ID, ExpiresAt: time.Now().Add(time.Hour)}, nil
+}
+
+func (repo *fakeIdentityRepository) CreateSession(context.Context, string, string, time.Time) (identity.Session, error) {
+	return identity.Session{}, nil
+}
+
+func (repo *fakeIdentityRepository) RevokeSession(context.Context, string) error {
+	return nil
+}
+
+func (repo *fakeIdentityRepository) ListMemberships(context.Context, string) ([]identity.Membership, error) {
+	return repo.auth.Memberships, nil
+}
+
+func (repo *fakeIdentityRepository) GetMembership(_ context.Context, _ string, workspaceID string) (identity.Membership, error) {
+	for _, membership := range repo.auth.Memberships {
+		if membership.WorkspaceID == workspaceID {
+			return membership, nil
+		}
+	}
+	return identity.Membership{}, errors.New("not found")
+}
+
+func (repo *fakeIdentityRepository) CreateOAuthState(context.Context, identity.OAuthState) (identity.OAuthState, error) {
+	return identity.OAuthState{}, nil
+}
+
+func (repo *fakeIdentityRepository) GetOAuthIdentity(context.Context, string, string) (identity.OAuthIdentity, error) {
+	return identity.OAuthIdentity{}, nil
+}
+
+func testAuth() identity.AuthenticatedUser {
+	return identity.AuthenticatedUser{
+		User: identity.User{ID: "usr_1", Email: "founder@example.com", Status: "active"},
+		Memberships: []identity.Membership{{
+			ID:          "wmb_1",
+			WorkspaceID: "wks_1",
+			UserID:      "usr_1",
+			Role:        identity.RoleOwner,
+			Status:      "active",
+		}},
+	}
 }
 
 type fakeProductRepository struct{}

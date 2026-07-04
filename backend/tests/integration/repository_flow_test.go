@@ -36,29 +36,40 @@ func TestFirstSliceHTTPFlowWithPostgres(t *testing.T) {
 		DB:     pool,
 	})
 
-	workspace := postJSON[workspaceResponse](t, router, "/api/v1/workspaces", `{"name":"Creator Lab"}`)
-	program := postJSON[workspaceProgramResponse](t, router, "/api/v1/workspaces/"+workspace.ID+"/programs", `{
+	client := newTestClient(router)
+	signup := postJSON[authResponse](t, client, "/api/v1/auth/signup", `{
+		"email":"founder@example.com",
+		"password":"CorrectHorse123",
+		"display_name":"Founder",
+		"workspace_name":"Creator Lab"
+	}`)
+	if len(signup.Workspaces) != 1 || signup.Workspaces[0].WorkspaceID == "" {
+		t.Fatalf("signup workspaces = %+v", signup.Workspaces)
+	}
+
+	workspaceID := signup.Workspaces[0].WorkspaceID
+	program := postJSON[workspaceProgramResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/programs", `{
 		"marketplace_name":"TikTok Shop",
 		"program_name":"TikTok Shop Affiliate",
 		"external_account_label":"main"
 	}`)
-	product := postJSON[productResponse](t, router, "/api/v1/workspaces/"+workspace.ID+"/products", `{
+	product := postJSON[productResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/products", `{
 		"name":"Creator Camera",
 		"category":"electronics"
 	}`)
-	offer := postJSON[offerResponse](t, router, "/api/v1/workspaces/"+workspace.ID+"/products/"+product.ID+"/offers", fmt.Sprintf(`{
+	offer := postJSON[offerResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/products/"+product.ID+"/offers", fmt.Sprintf(`{
 		"workspace_program_id":%q,
 		"title":"TikTok Shop offer",
 		"price_cents":129900,
 		"currency":"brl"
 	}`, program.ID))
-	link := postJSON[linkResponse](t, router, "/api/v1/workspaces/"+workspace.ID+"/links", fmt.Sprintf(`{
+	link := postJSON[linkResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/links", fmt.Sprintf(`{
 		"product_id":%q,
 		"offer_id":%q,
 		"destination_url":"https://example.com/products/creator-camera",
 		"label":"TikTok bio"
 	}`, product.ID, offer.ID))
-	shortLink := postJSON[shortLinkResponse](t, router, "/api/v1/workspaces/"+workspace.ID+"/links/"+link.ID+"/short-links", `{"slug":"creator-camera"}`)
+	shortLink := postJSON[shortLinkResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/links/"+link.ID+"/short-links", `{"slug":"creator-camera"}`)
 
 	redirectReq := httptest.NewRequest(http.MethodGet, "/r/"+shortLink.Slug, nil)
 	redirectReq.Header.Set("Referer", "https://social.example/post")
@@ -73,7 +84,7 @@ func TestFirstSliceHTTPFlowWithPostgres(t *testing.T) {
 		t.Fatalf("Location = %q", location)
 	}
 
-	clicksByProduct := getJSON[clickMetricsResponse](t, router, "/api/v1/workspaces/"+workspace.ID+"/analytics/clicks?group_by=product")
+	clicksByProduct := getJSON[clickMetricsResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/analytics/clicks?group_by=product")
 	if clicksByProduct.GroupBy != "product" || len(clicksByProduct.Items) != 1 {
 		t.Fatalf("product metrics = %+v", clicksByProduct)
 	}
@@ -81,7 +92,7 @@ func TestFirstSliceHTTPFlowWithPostgres(t *testing.T) {
 		t.Fatalf("product metric item = %+v", clicksByProduct.Items[0])
 	}
 
-	clicksByLink := getJSON[clickMetricsResponse](t, router, "/api/v1/workspaces/"+workspace.ID+"/analytics/clicks?group_by=link")
+	clicksByLink := getJSON[clickMetricsResponse](t, client, "/api/v1/workspaces/"+workspaceID+"/analytics/clicks?group_by=link")
 	if clicksByLink.GroupBy != "link" || len(clicksByLink.Items) != 1 {
 		t.Fatalf("link metrics = %+v", clicksByLink)
 	}
@@ -139,28 +150,43 @@ func runMigrations(t *testing.T, ctx context.Context, pool *pgxpool.Pool) {
 	}
 }
 
-func postJSON[T any](t *testing.T, router *gin.Engine, path string, body string) T {
+type testClient struct {
+	router  *gin.Engine
+	cookies []*http.Cookie
+}
+
+func newTestClient(router *gin.Engine) *testClient {
+	return &testClient{router: router}
+}
+
+func postJSON[T any](t *testing.T, client *testClient, path string, body string) T {
 	t.Helper()
 
 	req := httptest.NewRequest(http.MethodPost, path, bytes.NewBufferString(body))
 	req.Header.Set("Content-Type", "application/json")
-	return doJSON[T](t, router, req, http.StatusCreated)
+	return doJSON[T](t, client, req, http.StatusCreated)
 }
 
-func getJSON[T any](t *testing.T, router *gin.Engine, path string) T {
+func getJSON[T any](t *testing.T, client *testClient, path string) T {
 	t.Helper()
 
 	req := httptest.NewRequest(http.MethodGet, path, nil)
-	return doJSON[T](t, router, req, http.StatusOK)
+	return doJSON[T](t, client, req, http.StatusOK)
 }
 
-func doJSON[T any](t *testing.T, router *gin.Engine, req *http.Request, wantStatus int) T {
+func doJSON[T any](t *testing.T, client *testClient, req *http.Request, wantStatus int) T {
 	t.Helper()
 
+	for _, cookie := range client.cookies {
+		req.AddCookie(cookie)
+	}
 	rec := httptest.NewRecorder()
-	router.ServeHTTP(rec, req)
+	client.router.ServeHTTP(rec, req)
 	if rec.Code != wantStatus {
 		t.Fatalf("%s %s status = %d, want %d, body = %s", req.Method, req.URL.String(), rec.Code, wantStatus, rec.Body.String())
+	}
+	for _, cookie := range rec.Result().Cookies() {
+		client.cookies = append(client.cookies, cookie)
 	}
 
 	var payload T
@@ -170,8 +196,12 @@ func doJSON[T any](t *testing.T, router *gin.Engine, req *http.Request, wantStat
 	return payload
 }
 
-type workspaceResponse struct {
-	ID string `json:"id"`
+type authResponse struct {
+	Workspaces []membershipResponse `json:"workspaces"`
+}
+
+type membershipResponse struct {
+	WorkspaceID string `json:"workspace_id"`
 }
 
 type workspaceProgramResponse struct {

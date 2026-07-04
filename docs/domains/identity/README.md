@@ -2,7 +2,7 @@
 title: Identity Domain
 status: active
 owner: system-architect
-last_verified_at: 2026-07-03
+last_verified_at: 2026-07-04
 source_of_truth: true
 depends_on:
   - ../../product/roadmap.md
@@ -23,6 +23,8 @@ Identity owns users, authentication, workspaces, membership, and authorization b
 - Store workspace memberships and roles.
 - Authorize product, marketplace, link, campaign, import, and analytics operations by workspace.
 - Support server-side session revocation.
+- Hash passwords with Argon2id.
+- Prepare OAuth identity/state storage without storing provider tokens before integration approval.
 
 ## Entities
 
@@ -31,6 +33,8 @@ Identity owns users, authentication, workspaces, membership, and authorization b
 - Membership: relation between user and workspace.
 - Role: permission tier inside a workspace.
 - Session: server-side login session tied to a user and revocable by the backend.
+- OAuth Identity: optional provider identity linked to a user after provider login is configured.
+- OAuth State: short-lived authorization state for OAuth CSRF protection.
 
 ## Invariants
 
@@ -39,6 +43,8 @@ Identity owns users, authentication, workspaces, membership, and authorization b
 - A session identifies a user, not a workspace; workspace context is selected or inferred per request.
 - Password hashes are never reversible and never leave the backend.
 - Workspace membership checks happen server-side, not only in the frontend.
+- Workspace roles are ordered as owner, admin, and member.
+- OAuth provider access/refresh tokens are not stored until a provider-specific token policy exists.
 
 ## Lifecycle
 
