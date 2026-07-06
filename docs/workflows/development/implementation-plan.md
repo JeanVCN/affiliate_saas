@@ -2,7 +2,7 @@
 title: Initial Implementation Plan
 status: active
 owner: system-architect
-last_verified_at: 2026-07-04
+last_verified_at: 2026-07-06
 source_of_truth: true
 depends_on:
   - ../../product/roadmap.md
@@ -63,22 +63,31 @@ Build the smallest vertical slice:
 
 ## Phase E: Frontend Foundation
 
-- Create Next.js app.
-- Add app shell.
-- Add product/link/campaign flows.
-- Add dashboard charts after backend contract stabilizes.
+- Create Next.js app. Implemented in `frontend/`.
+- Add app shell. Implemented with a two-column operational workspace.
+- Add auth/session workflow. Implemented for signup, login, session restore, and logout.
+- Add product/link starter flows. Implemented for marketplace program, product, offer, affiliate link, short link, and analytics overview.
+- Add campaign/import/compliance flows after the first frontend foundation is committed.
+- Add dashboard charts after analytics contracts and frontend layout stabilize.
 
 ## Current Next Action
 
-Stabilize the first backend slice before frontend or AI work:
+Stabilize and commit the first frontend slice before AI work:
 
-1. Run the normal backend suite: `GOCACHE=/tmp/affiliate-saas-go-cache go test ./...`.
-2. Run the PostgreSQL integration test with `AFFILIATE_TEST_DATABASE_URL`.
-3. Verify the first slice end-to-end:
+1. Run frontend checks: `cd frontend && npm run lint && npm run build`.
+2. Keep backend checks available before committing or when API contracts change:
 
-```text
-workspace -> marketplace program -> policy note -> product -> campaign -> channel package -> compliance check -> publishing task -> offer -> affiliate link -> CSV upload import -> import reconciliation -> short redirect -> click event -> analytics query
+```bash
+cd backend
+GOCACHE=/tmp/affiliate-saas-go-cache go test ./...
+AFFILIATE_TEST_DATABASE_URL='postgres://affiliate:affiliate@localhost:55432/affiliate_saas?sslmode=disable' GOCACHE=/tmp/affiliate-saas-go-cache go test ./tests/integration
 ```
 
-4. Keep AI generation, marketplace integrations, provider OAuth token storage, and frontend scaffold out until this backend slice is committed.
-5. Next candidates after this backend checkpoint: richer compliance rule sets, AI/provider abstraction, or frontend foundation once approved.
+3. Verify the frontend first slice through the Next proxy:
+
+```text
+signup/login -> session restore -> marketplace program -> product -> offer -> affiliate link -> short link -> analytics overview
+```
+
+4. Keep AI generation, marketplace integrations, provider OAuth token storage, scraping, and browser automation out until the manual frontend MVP is more complete.
+5. Next candidates after this frontend checkpoint: campaign/compliance/import screens, richer analytics UI, or AI/provider abstraction once approved.

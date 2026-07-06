@@ -11,7 +11,7 @@ depends_on:
 
 # Local Development
 
-The repository now includes the initial Go backend scaffold. These commands define the current verification path and the intended local workflow as implementation grows.
+The repository now includes a Go backend and an initial Next.js frontend. These commands define the current verification path and the intended local workflow as implementation grows.
 
 ## Current Setup
 
@@ -97,18 +97,45 @@ signup -> session cookie -> workspace RBAC -> marketplace program -> product -> 
 
 Do not point `AFFILIATE_TEST_DATABASE_URL` at a production or shared database.
 
-## Future Frontend Workflow
+## Frontend Workflow
 
-Expected once the Next.js app exists:
+The Next.js app lives in `frontend/`. It proxies `/backend/*` to the local API container so browser requests can use the backend session cookie without adding CORS requirements to the Go API during the first frontend slice.
 
 ```bash
+cd frontend
 npm install
 npm run dev
-npm test
+npm run lint
 npm run build
 ```
 
-Exact package manager and app directory will be documented when the frontend is scaffolded.
+Default local values:
+
+```bash
+NEXT_PUBLIC_API_BASE_URL=/backend
+API_PROXY_ORIGIN=http://localhost:18080
+```
+
+The frontend dev server runs on:
+
+```text
+http://localhost:13000
+```
+
+Start the backend stack first from the repository root:
+
+```bash
+docker compose up -d postgres api
+docker compose run --rm migrate
+```
+
+Current frontend slice:
+
+```text
+signup/login -> session restore -> marketplace program -> product -> offer -> affiliate link -> short link -> analytics overview
+```
+
+The frontend normalizes empty program lists because the current backend can return `null` for an empty list response.
 
 ## Migrations
 
@@ -136,10 +163,10 @@ Migrations should run as a separate documented command or one-shot service.
 
 ## First Implementation Slice
 
-The active implementation target is:
+The active frontend implementation target is:
 
 ```text
-workspace -> marketplace program -> product -> affiliate link -> short redirect -> click event -> dashboard query
+workspace -> marketplace program -> product -> offer -> affiliate link -> short link -> analytics overview
 ```
 
 Do not begin with AI generation, marketplace integrations, OAuth, or browser automation.
