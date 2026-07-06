@@ -2,7 +2,7 @@
 title: Local Development
 status: active
 owner: infrastructure-engineer
-last_verified_at: 2026-07-04
+last_verified_at: 2026-07-06
 source_of_truth: true
 depends_on:
   - ../deployment/docker.md
@@ -53,6 +53,32 @@ The local PostgreSQL URL exposed to host-run backend commands is:
 postgres://affiliate:affiliate@localhost:55432/affiliate_saas?sslmode=disable
 ```
 
+## Local API Container
+
+Build and start the API with PostgreSQL:
+
+```bash
+docker compose up -d postgres api
+```
+
+Run migrations against the Compose PostgreSQL service:
+
+```bash
+docker compose run --rm migrate
+```
+
+The API is exposed on:
+
+```text
+http://localhost:18080
+```
+
+Health check:
+
+```bash
+curl http://localhost:18080/healthz
+```
+
 ## Backend Integration Test
 
 Use a disposable local PostgreSQL database and set:
@@ -100,7 +126,7 @@ migrate -path backend/migrations -database "$DATABASE_URL" up
 
 ## Future Docker Workflow
 
-Expected once Compose exists:
+Full local stack rebuild:
 
 ```bash
 docker compose up --build

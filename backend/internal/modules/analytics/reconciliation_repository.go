@@ -26,30 +26,34 @@ func (repo *PostgresRepository) UpdateConversionImportRow(ctx context.Context, w
 	var item ConversionImportRow
 	var occurredAt sql.NullTime
 	var reconciledAt sql.NullTime
+	productID := nullableString(input.ProductID)
+	affiliateLinkID := nullableString(input.AffiliateLinkID)
+	reconciliationStatus := nullableString(input.ReconciliationStatus)
+	reconciliationNote := nullableString(input.ReconciliationNote)
 	err := repo.db.QueryRow(ctx, `
 		WITH resolved AS (
 			SELECT
-				COALESCE(NULLIF($4, ''), (
+				COALESCE(NULLIF($4::text, ''), (
 					SELECT al.product_id
 					FROM affiliate_links al
-					WHERE al.id = NULLIF($5, '')
+					WHERE al.id = NULLIF($5::text, '')
 					  AND al.workspace_id = $1
 					  AND al.archived_at IS NULL
 				)) AS product_id,
-				NULLIF($5, '') AS affiliate_link_id
+				NULLIF($5::text, '') AS affiliate_link_id
 		)
 		UPDATE conversion_import_rows cir
 		SET product_id = COALESCE(r.product_id, cir.product_id),
 		    affiliate_link_id = COALESCE(r.affiliate_link_id, cir.affiliate_link_id),
-		    reconciliation_status = COALESCE($6, CASE
+		    reconciliation_status = COALESCE($6::text, CASE
 		      WHEN COALESCE(r.product_id, cir.product_id) IS NOT NULL
 		        OR COALESCE(r.affiliate_link_id, cir.affiliate_link_id) IS NOT NULL
 		      THEN 'matched'
 		      ELSE cir.reconciliation_status
 		    END),
-		    reconciliation_note = COALESCE($7, cir.reconciliation_note),
+		    reconciliation_note = COALESCE($7::text, cir.reconciliation_note),
 		    reconciled_at = CASE
-		      WHEN $6 IS NOT NULL OR $4 IS NOT NULL OR $5 IS NOT NULL OR $7 IS NOT NULL THEN now()
+		      WHEN $6::text IS NOT NULL OR $4::text IS NOT NULL OR $5::text IS NOT NULL OR $7::text IS NOT NULL THEN now()
 		      ELSE cir.reconciled_at
 		    END
 		FROM resolved r
@@ -73,11 +77,11 @@ func (repo *PostgresRepository) UpdateConversionImportRow(ctx context.Context, w
 		        AND al.product_id = COALESCE(r.product_id, cir.product_id)
 		    )
 		  )
-		RETURNING id, workspace_id, conversion_import_id, COALESCE(product_id, ''),
-		          COALESCE(affiliate_link_id, ''), occurred_at, COALESCE(order_reference, ''),
-		          gross_amount_cents, commission_cents, COALESCE(currency, ''), raw_payload,
-		          reconciliation_status, COALESCE(reconciliation_note, ''), reconciled_at, created_at`,
-		workspaceID, importID, rowID, input.ProductID, input.AffiliateLinkID, input.ReconciliationStatus, input.ReconciliationNote,
+		RETURNING cir.id, cir.workspace_id, cir.conversion_import_id, COALESCE(cir.product_id, ''),
+		          COALESCE(cir.affiliate_link_id, ''), cir.occurred_at, COALESCE(cir.order_reference, ''),
+		          cir.gross_amount_cents, cir.commission_cents, COALESCE(cir.currency, ''), cir.raw_payload,
+		          cir.reconciliation_status, COALESCE(cir.reconciliation_note, ''), cir.reconciled_at, cir.created_at`,
+		workspaceID, importID, rowID, productID, affiliateLinkID, reconciliationStatus, reconciliationNote,
 	).Scan(&item.ID, &item.WorkspaceID, &item.ConversionImportID, &item.ProductID, &item.AffiliateLinkID,
 		&occurredAt, &item.OrderReference, &item.GrossAmountCents, &item.CommissionCents,
 		&item.Currency, &item.RawPayload, &item.ReconciliationStatus, &item.ReconciliationNote,
@@ -89,4 +93,11 @@ func (repo *PostgresRepository) UpdateConversionImportRow(ctx context.Context, w
 		item.ReconciledAt = &reconciledAt.Time
 	}
 	return item, common.NormalizePostgresErr(err)
+}
+
+func nullableString(value *string) any {
+	if value == nil {
+		return nil
+	}
+	return *value
 }

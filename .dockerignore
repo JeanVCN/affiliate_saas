@@ -1,0 +1,10 @@
+.git
+.agents
+.codex
+postgres_data
+**/.env
+**/.DS_Store
+**/node_modules
+**/tmp
+**/dist
+**/build

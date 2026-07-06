@@ -2,6 +2,7 @@ package common
 
 import (
 	"errors"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,6 +27,7 @@ func Respond(c *gin.Context, payload any, err error, successStatus int) {
 	case errors.Is(err, ErrConflict):
 		c.JSON(http.StatusConflict, gin.H{"error": gin.H{"code": "conflict", "message": "resource already exists"}})
 	default:
+		log.Printf("internal error: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": gin.H{"code": "internal_error", "message": "internal server error"}})
 	}
 }

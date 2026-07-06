@@ -2,7 +2,7 @@
 title: Docker Deployment Baseline
 status: active
 owner: infrastructure-engineer
-last_verified_at: 2026-07-04
+last_verified_at: 2026-07-06
 source_of_truth: true
 depends_on:
   - ../architecture/system-overview.md
@@ -28,13 +28,13 @@ Initial local stack once code exists:
 Current `docker-compose.yml` provides:
 
 - `postgres`
+- `api`
+- `migrate` as a one-shot migration command
 
 Future local Compose growth should add:
 
-- `api`
 - `frontend`
 - `redis` when needed
-- `migrate` one-shot job or documented migration command
 
 ## Environment
 
@@ -59,6 +59,18 @@ migrate -path backend/migrations -database "$DATABASE_URL" up
 ```
 
 Local Compose may expose this as a one-shot service or documented command.
+
+Current local one-shot command:
+
+```bash
+docker compose run --rm migrate
+```
+
+Current local API startup:
+
+```bash
+docker compose up -d postgres api
+```
 
 ## Production Direction
 
